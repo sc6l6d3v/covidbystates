@@ -1,0 +1,1418 @@
+{
+    "data": [
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": " Norfolk County, MA",
+            "lat": "42.1767",
+            "long": "-71.1449"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Alabama",
+            "lat": "32.3182",
+            "long": "-86.9023"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Alameda County, CA",
+            "lat": "37.6017",
+            "long": "-121.7195"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Alaska",
+            "lat": "61.3707",
+            "long": "-152.4044"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "American Samoa",
+            "lat": "-14.270999999999999",
+            "long": "-170.132"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Arizona",
+            "lat": "33.7298",
+            "long": "-111.4312"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Arkansas",
+            "lat": "34.9697",
+            "long": "-92.3731"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Ashland, NE",
+            "lat": null,
+            "long": null
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Bennington County, VT",
+            "lat": "43.0279",
+            "long": "-73.1350"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Bergen County, NJ",
+            "lat": "40.9263",
+            "long": "-74.0770"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Berkeley, CA",
+            "lat": "37.8715",
+            "long": "-122.2730"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Berkshire County, MA",
+            "lat": "42.3118",
+            "long": "-73.1822"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Boston, MA",
+            "lat": "42.3601",
+            "long": "-71.0589"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Broward County, FL",
+            "lat": "26.1901",
+            "long": "-80.3659"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "California",
+            "lat": "36.1162",
+            "long": "-119.6816"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Carver County, MN",
+            "lat": "44.8254",
+            "long": "-93.7842"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Charleston County, SC",
+            "lat": "32.7957",
+            "long": "-79.7848"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Charlotte County, FL",
+            "lat": "26.8946",
+            "long": "-81.9098"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Chatham County, NC",
+            "lat": "35.7211",
+            "long": "-79.1781"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Cherokee County, GA",
+            "lat": "34.2515",
+            "long": "-84.4803"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Chicago",
+            "lat": null,
+            "long": null
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Chicago, IL",
+            "lat": "41.8781",
+            "long": "-87.6298"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Clark County, NV",
+            "lat": "36.0796",
+            "long": "-115.0940"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Clark County, WA",
+            "lat": "45.7466",
+            "long": "-122.5194"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Cobb County, GA",
+            "lat": "33.8999",
+            "long": "-84.5641"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Collin County, TX",
+            "lat": "33.1795",
+            "long": "-96.4930"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Colorado",
+            "lat": "39.0598",
+            "long": "-105.3111"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Connecticut",
+            "lat": "41.5978",
+            "long": "-72.7554"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Contra Costa County, CA",
+            "lat": "37.8534",
+            "long": "-121.9018"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Cook County, IL",
+            "lat": "41.7377",
+            "long": "-87.6976"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Davidson County, TN",
+            "lat": "36.1343",
+            "long": "-86.8220"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Davis County, UT",
+            "lat": "40.9629",
+            "long": "-112.0953"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Delaware",
+            "lat": "39.3185",
+            "long": "-75.5071"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Delaware County, PA",
+            "lat": "39.9078",
+            "long": "-75.3879"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Denver County, CO",
+            "lat": "39.7392",
+            "long": "-104.9903"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Diamond Princess",
+            "lat": "35.4437",
+            "long": "139.6380"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "District of Columbia",
+            "lat": "38.8974",
+            "long": "-77.0268"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Douglas County, CO",
+            "lat": "39.2587",
+            "long": "-104.9389"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Douglas County, NE",
+            "lat": "41.3148",
+            "long": "-96.1951"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Douglas County, OR",
+            "lat": "43.1261",
+            "long": "-123.2492"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "El Paso County, CO",
+            "lat": "38.9108",
+            "long": "-104.4723"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Fairfax County, VA",
+            "lat": "38.9085",
+            "long": "-77.2405"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Fairfield County, CT",
+            "lat": "41.2560",
+            "long": "-73.3709"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Fayette County, KY",
+            "lat": "38.0606",
+            "long": "-84.4803"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Federal Bureau of Prisons",
+            "lat": null,
+            "long": null
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Florida",
+            "lat": "27.7663",
+            "long": "-81.6868"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Floyd County, GA",
+            "lat": "34.2829",
+            "long": "-85.2308"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Fort Bend County, TX",
+            "lat": "29.5693",
+            "long": "-95.8143"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Fresno County, CA",
+            "lat": "36.9859",
+            "long": "-119.2321"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Fulton County, GA",
+            "lat": "33.8034",
+            "long": "-84.3963"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Georgia",
+            "lat": "33.0406",
+            "long": "-83.6431"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Grafton County, NH",
+            "lat": "43.9088",
+            "long": "-71.8260"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Grand Princess",
+            "lat": "37.6489",
+            "long": "-122.6655"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Grand Princess Cruise Ship",
+            "lat": "37.6489",
+            "long": "-122.6655"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Grant County, WA",
+            "lat": "47.1981",
+            "long": "-119.3732"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Guam",
+            "lat": "13.4443",
+            "long": "144.7937"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Harford County, MD",
+            "lat": "39.5839",
+            "long": "-76.3637"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Harris County, TX",
+            "lat": "29.7752",
+            "long": "-95.3103"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Harrison County, KY",
+            "lat": "38.4333",
+            "long": "-84.3542"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Hawaii",
+            "lat": "21.0943",
+            "long": "-157.4983"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Hendricks County, IN",
+            "lat": "39.8065",
+            "long": "-86.5401"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Hillsborough, FL",
+            "lat": "27.9904",
+            "long": "-82.3018"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Honolulu County, HI",
+            "lat": "21.3070",
+            "long": "-157.8584"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Hudson County, NJ",
+            "lat": "40.7453",
+            "long": "-74.0535"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Humboldt County, CA",
+            "lat": "40.7450",
+            "long": "-123.8695"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Idaho",
+            "lat": "44.2405",
+            "long": "-114.4788"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Illinois",
+            "lat": "40.3495",
+            "long": "-88.9861"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Indiana",
+            "lat": "39.8494",
+            "long": "-86.2583"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Iowa",
+            "lat": "42.0115",
+            "long": "-93.2105"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Jackson County, OR ",
+            "lat": "42.3345",
+            "long": "-122.7647"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Jefferson County, KY",
+            "lat": "38.1938",
+            "long": "-85.6435"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Jefferson County, WA",
+            "lat": "47.7425",
+            "long": "-123.3040"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Jefferson Parish, LA",
+            "lat": "29.6499",
+            "long": "-90.1121"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Johnson County, IA",
+            "lat": "41.6699",
+            "long": "-91.5984"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Johnson County, KS",
+            "lat": "38.8454",
+            "long": "-94.8521"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Kansas",
+            "lat": "38.5266",
+            "long": "-96.7265"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Kentucky",
+            "lat": "37.6681",
+            "long": "-84.6701"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Kershaw County, SC",
+            "lat": "34.3672",
+            "long": "-80.5883"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "King County, WA",
+            "lat": "47.5480",
+            "long": "-121.9836"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Kittitas County, WA",
+            "lat": "47.1750",
+            "long": "-120.9319"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Klamath County, OR",
+            "lat": "42.6953",
+            "long": "-121.6142"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Lackland, TX",
+            "lat": null,
+            "long": null
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Lackland, TX (From Diamond Princess)",
+            "lat": "29.3829",
+            "long": "-98.6134"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Lee County, FL",
+            "lat": "26.6630",
+            "long": "-81.9535"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Los Angeles, CA",
+            "lat": "34.0522",
+            "long": "-118.2437"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Louisiana",
+            "lat": "31.1695",
+            "long": "-91.8678"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Madera County, CA",
+            "lat": "37.2519",
+            "long": "-119.6963"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Madison, WI",
+            "lat": "43.0731",
+            "long": "-89.4012"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Maine",
+            "lat": "44.6939",
+            "long": "-69.3819"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Manatee County, FL",
+            "lat": "27.4799",
+            "long": "-82.3452"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Maricopa County, AZ",
+            "lat": "33.2918",
+            "long": "-112.4291"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Marion County, IN",
+            "lat": "39.8362",
+            "long": "-86.1752"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Marion County, OR",
+            "lat": "44.8446",
+            "long": "-122.5927"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Maryland",
+            "lat": "39.0639",
+            "long": "-76.8021"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Massachusetts",
+            "lat": "42.2302",
+            "long": "-71.5301"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Michigan",
+            "lat": "43.3266",
+            "long": "-84.5361"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Middlesex County, MA",
+            "lat": "42.4672",
+            "long": "-71.2874"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Minnesota",
+            "lat": "45.6945",
+            "long": "-93.9002"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Mississippi",
+            "lat": "32.7416",
+            "long": "-89.6787"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Missouri",
+            "lat": "38.4561",
+            "long": "-92.2884"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Montana",
+            "lat": "46.9219",
+            "long": "-110.4544"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Montgomery County, MD",
+            "lat": "39.1547",
+            "long": "-77.2405"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Montgomery County, PA",
+            "lat": "40.2290",
+            "long": "-75.3879"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Montgomery County, TX",
+            "lat": "30.3213",
+            "long": "-95.4778"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Nassau County, NY",
+            "lat": "40.6546",
+            "long": "-73.5594"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Nebraska",
+            "lat": "41.1254",
+            "long": "-98.2681"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Nevada",
+            "lat": "38.3135",
+            "long": "-117.0554"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "New Hampshire",
+            "lat": "43.4525",
+            "long": "-71.5639"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "New Jersey",
+            "lat": "40.2989",
+            "long": "-74.5210"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "New Mexico",
+            "lat": "34.8405",
+            "long": "-106.2485"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "New York",
+            "lat": "42.1657",
+            "long": "-74.9481"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "New York City, NY",
+            "lat": "40.7128",
+            "long": "-74.0060"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "New York County, NY",
+            "lat": "40.7128",
+            "long": "-74.0060"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Norfolk County, MA",
+            "lat": "42.1767",
+            "long": "-71.1449"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "North Carolina",
+            "lat": "35.6301",
+            "long": "-79.8064"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "North Dakota",
+            "lat": "47.5289",
+            "long": "-99.7840"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Northern Mariana Islands",
+            "lat": "15.0979",
+            "long": "145.6739"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Norwell County, MA",
+            "lat": "42.1615",
+            "long": "-70.7928"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Ohio",
+            "lat": "40.3888",
+            "long": "-82.7649"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Okaloosa County, FL",
+            "lat": "30.5773",
+            "long": "-86.6611"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Oklahoma",
+            "lat": "35.5653",
+            "long": "-96.9289"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Omaha, NE (From Diamond Princess)",
+            "lat": "41.2545",
+            "long": "-95.9758"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Orange County, CA",
+            "lat": "33.7879",
+            "long": "-117.8531"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Orange, CA",
+            "lat": "33.7879",
+            "long": "-117.8531"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Oregon",
+            "lat": "44.5720",
+            "long": "-122.0709"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Pennsylvania",
+            "lat": "40.5908",
+            "long": "-77.2098"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Pierce County, WA",
+            "lat": "47.0676",
+            "long": "-122.1295"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Pinal County, AZ",
+            "lat": "32.8162",
+            "long": "-111.2845"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Placer County, CA",
+            "lat": "39.0916",
+            "long": "-120.8039"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Plymouth County, MA",
+            "lat": "42.1615",
+            "long": "-70.7928"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Polk County, GA",
+            "lat": "34.0132",
+            "long": "-85.1479"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Portland, OR",
+            "lat": "45.5051",
+            "long": "-122.6750"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Providence County, RI",
+            "lat": "41.8882",
+            "long": "-71.4774"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Providence, RI",
+            "lat": "41.8240",
+            "long": "-71.4128"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Puerto Rico",
+            "lat": "18.2208",
+            "long": "-66.5901"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Queens County, NY",
+            "lat": "40.7282",
+            "long": "-73.7949"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Ramsey County, MN",
+            "lat": "44.9964",
+            "long": "-93.0616"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Recovered",
+            "lat": "0.0",
+            "long": "0.0"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Rhode Island",
+            "lat": "41.6809",
+            "long": "-71.5118"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Riverside County, CA",
+            "lat": "33.9533",
+            "long": "-117.3961"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Rockingham County, NH",
+            "lat": "42.9931",
+            "long": "-71.0498"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Rockland County, NY",
+            "lat": "41.1489",
+            "long": "-73.9830"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Sacramento County, CA",
+            "lat": "38.4747",
+            "long": "-121.3542"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "San Antonio, TX",
+            "lat": "29.4241",
+            "long": "-98.4936"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "San Benito, CA",
+            "lat": "36.5761",
+            "long": "-120.9876"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "San Diego County, CA",
+            "lat": "32.7157",
+            "long": "-117.1611"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "San Francisco County, CA",
+            "lat": "37.7749",
+            "long": "-122.4194"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "San Mateo, CA",
+            "lat": "37.5630",
+            "long": "-122.3255"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Santa Clara County, CA",
+            "lat": "37.3541",
+            "long": "-121.9552"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Santa Clara, CA",
+            "lat": "37.3541",
+            "long": "-121.9552"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Santa Cruz County, CA",
+            "lat": "36.9741",
+            "long": "-122.0308"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Santa Rosa County, FL",
+            "lat": "30.7690",
+            "long": "-86.9824"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Sarasota, FL",
+            "lat": "27.3364",
+            "long": "-82.5307"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Saratoga County, NY",
+            "lat": "43.0324",
+            "long": "-73.9360"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Seattle, WA",
+            "lat": "47.6062",
+            "long": "-122.3321"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Shasta County, CA",
+            "lat": "40.7909",
+            "long": "-121.8474"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Shelby County, TN",
+            "lat": "35.1269",
+            "long": "-89.9253"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Snohomish County, WA",
+            "lat": "48.0330",
+            "long": "-121.8339"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Sonoma County, CA",
+            "lat": "38.5780",
+            "long": "-122.9888"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "South Carolina",
+            "lat": "33.8569",
+            "long": "-80.9450"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "South Dakota",
+            "lat": "44.2998",
+            "long": "-99.4388"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Spartanburg County, SC",
+            "lat": "34.8606",
+            "long": "-81.9535"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Spokane County, WA",
+            "lat": "47.6587",
+            "long": "-117.4225"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "St. Louis County, MO",
+            "lat": "38.6103",
+            "long": "-90.4125"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Suffolk County, MA",
+            "lat": "42.3601",
+            "long": "-71.0589"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Suffolk County, NY",
+            "lat": "40.9849",
+            "long": "-72.6151"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Summit County, CO",
+            "lat": "39.5912",
+            "long": "-106.0640"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Tempe, AZ",
+            "lat": "33.4255",
+            "long": "-111.9400"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Tennessee",
+            "lat": "35.7478",
+            "long": "-86.6923"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Texas",
+            "lat": "31.0545",
+            "long": "-97.5635"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Travis, CA",
+            "lat": null,
+            "long": null
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Travis, CA (From Diamond Princess)",
+            "lat": "38.2721",
+            "long": "-121.9399"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Tulsa County, OK",
+            "lat": "36.1593",
+            "long": "-95.9410"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Ulster County, NY",
+            "lat": "41.8586",
+            "long": "-74.3118"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Umatilla, OR",
+            "lat": "45.7750",
+            "long": "-118.7606"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Unassigned Location (From Diamond Princess)",
+            "lat": "35.4437",
+            "long": "139.6380"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Unassigned Location, VT",
+            "lat": "44.3378",
+            "long": "-72.7563"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Unassigned Location, WA",
+            "lat": "47.7511",
+            "long": "-120.7401"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "United States Virgin Islands",
+            "lat": "18.3358",
+            "long": "-64.8963"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Unknown Location, MA",
+            "lat": "42.4072",
+            "long": "-71.3824"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "US",
+            "lat": "37.0902",
+            "long": "-95.7129"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "US Military",
+            "lat": null,
+            "long": null
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Utah",
+            "lat": "40.1500",
+            "long": "-111.8624"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Vermont",
+            "lat": "44.0459",
+            "long": "-72.7107"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Veteran Hospitals",
+            "lat": null,
+            "long": null
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Virgin Islands",
+            "lat": "18.3358",
+            "long": "-64.8963"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Virgin Islands, U.S.",
+            "lat": "18.3358",
+            "long": "-64.8963"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Virginia",
+            "lat": "37.7693",
+            "long": "-78.1700"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Volusia County, FL",
+            "lat": "29.0280",
+            "long": "-81.0755"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Wake County, NC",
+            "lat": "35.8032",
+            "long": "-78.5661"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Washington",
+            "lat": "47.4009",
+            "long": "-121.4905"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Washington County, OR",
+            "lat": "45.5470",
+            "long": "-123.1386"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Washington, D.C.",
+            "lat": "38.9072",
+            "long": "-77.0369"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Washoe County, NV",
+            "lat": "40.5608",
+            "long": "-119.6035"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Wayne County, PA",
+            "lat": "41.6739",
+            "long": "-75.2479"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "West Virginia",
+            "lat": "38.4912",
+            "long": "-80.9545"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Westchester County, NY",
+            "lat": "41.1220",
+            "long": "-73.7949"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Williamson County, TN",
+            "lat": "35.9179",
+            "long": "-86.8622"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Wisconsin",
+            "lat": "44.2685",
+            "long": "-89.6165"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Wuhan Evacuee",
+            "lat": "0.0",
+            "long": "0.0"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Wyoming",
+            "lat": "42.7560",
+            "long": "-107.3025"
+        },
+        {
+            "iso": "USA",
+            "name": "US",
+            "province": "Yolo County, CA",
+            "lat": "38.7646",
+            "long": "-121.9018"
+        }
+    ]
+}
