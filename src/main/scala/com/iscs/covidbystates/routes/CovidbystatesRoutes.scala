@@ -29,6 +29,11 @@ object CovidbystatesRoutes {
           grid <- C.getByStates(states.split(",").toList)
           resp <- Ok(grid)
         } yield resp
+      case GET -> Root / "covidCounties" / state / counties =>
+        for {
+          grid <- C.getByCities(state, counties.split(",").toList)
+          resp <- Ok(grid)
+        } yield resp
     }
   }
 

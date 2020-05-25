@@ -18,6 +18,7 @@ trait Covid[F[_]] {
   def getByState(state: String): F[Covid.State]
   def getByStates(states: List[String]): F[Covid.State]
   def getByCity(state: String, city: String): F[Covid.City]
+  def getByCities(state: String, cities: List[String]): F[Covid.City]
 }
 
 object Covid {
@@ -42,11 +43,12 @@ object Covid {
   object City {
     implicit val cityDecoder: Decoder[City] = (c: HCursor) => {
       val topObj = c.downField("data").downArray
-      val regionObj = c.downField("data").downArray.downField("region")
+      val regionObj = topObj.downField("region")
       val state = regionObj.downField("province").as[String].getOrElse("NOSTATE")
       val city = regionObj.downField("cities").downArray.downField("name").as[String].getOrElse("NOCITY")
-      val confirmed = topObj.downField("confirmed").as[Int].getOrElse(-1)
-      val deaths = topObj.downField("deaths").as[Int].getOrElse(-1)
+      val citiesObj = regionObj.downField("cities").downArray
+      val confirmed = citiesObj.downField("confirmed").as[Int].getOrElse(-1)
+      val deaths = citiesObj.downField("deaths").as[Int].getOrElse(-1)
       Right(City(state, city, confirmed, deaths))
     }
 
@@ -79,6 +81,13 @@ object Covid {
         acc.copy(state = s"${acc.state},${elem.state}", positive = acc.positive + elem.positive, death = acc.death + elem.death)
       })
     } yield stateTotals
+
+    override def getByCities(state: String, cities: List[String]): F[City] = for {
+      cityStats <- cities.map(city => getByCity(state, city)).sequence
+      cityTotals <- Concurrent[F].delay(cityStats.foldLeft(City(state, "", 0, 0)){ (acc, elem) =>
+        acc.copy(city = s"${acc.city},${elem.city}", confirmed = acc.confirmed + elem.confirmed, deaths = acc.deaths + elem.deaths)
+      })
+    } yield cityTotals
   }
 }
 

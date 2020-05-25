@@ -3,6 +3,8 @@ package com.iscs.covidbystates.covid
 import java.time._
 import java.time.format.DateTimeFormatter
 
+import org.http4s.Uri
+
 case class CovidApiUri(base: String, path: String, date: String = LocalDate.now.minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE),
                        query: String = "US", iso: String = "USA", regionName: String = "US",
                        regionProvince: String, cityName: String) {
@@ -34,8 +36,9 @@ object CovidApiUri {
     "city_name"
   )
 
-  def apply(state: String, city: String): CovidApiUri =
-    CovidApiUri(base = baseUri, path = basePath, regionProvince = state, cityName = city).withQuery(s"US%20$state")
+  def apply(state: String, city: String): CovidApiUri = {
+    CovidApiUri(base = baseUri, path = basePath, regionProvince = state, cityName = Uri.encode(city)).withQuery(s"US%20$state")
+  }
 
   def builder(uri: CovidApiUri): String = s"${uri.base}${uri.path}/?date=${uri.date}&q=${uri.query}&iso=${uri.iso}&" +
     s"region_name=${uri.regionName}&region_province=${uri.regionProvince}&city_name=${uri.cityName}"
