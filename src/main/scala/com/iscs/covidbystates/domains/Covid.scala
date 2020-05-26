@@ -30,8 +30,8 @@ object Covid {
   object State {
     implicit val stateDecoder: Decoder[State] = (c: HCursor) => {
       val state = c.downField("state").as[String].getOrElse("NOSTATE")
-      val positive = c.downField("positive").as[Int].getOrElse(-1)
-      val death = c.downField("death").as[Int].getOrElse(-1)
+      val positive = c.downField("positive").as[Int].getOrElse(0)
+      val death = c.downField("death").as[Int].getOrElse(0)
       Right(State(state, positive, death))
     }
 
@@ -47,8 +47,8 @@ object Covid {
       val state = regionObj.downField("province").as[String].getOrElse("NOSTATE")
       val city = regionObj.downField("cities").downArray.downField("name").as[String].getOrElse("NOCITY")
       val citiesObj = regionObj.downField("cities").downArray
-      val confirmed = citiesObj.downField("confirmed").as[Int].getOrElse(-1)
-      val deaths = citiesObj.downField("deaths").as[Int].getOrElse(-1)
+      val confirmed = citiesObj.downField("confirmed").as[Int].getOrElse(0)
+      val deaths = citiesObj.downField("deaths").as[Int].getOrElse(0)
       Right(City(state, city, confirmed, deaths))
     }
 
@@ -69,7 +69,7 @@ object Covid {
     }
 
     override def getByCity(state: String, city: String): F[City] = {
-      val stateName = if (nameMap.containsKey(state)) nameMap.get(state) else "NY"
+      val stateName = if (nameMap.containsKey(state)) nameMap.get(state) else "XX"
       val cityUri = Uri.unsafeFromString(CovidApiUri.builder(CovidApiUri(stateName, city)))
       C.expect[City](GET(cityUri))
         .adaptError { case t => DataError(t) } // Prevent Client Json Decoding Failure Leaking

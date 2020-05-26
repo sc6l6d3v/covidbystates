@@ -5,6 +5,7 @@ val LogbackVersion = "1.2.3"
 val catsRetryVersion = "1.1.0"
 val fs2Version = "2.2.2"
 val loggingVersion = "3.9.2"
+val censusKey = sys.env.get("CENSUSKEY").getOrElse("NOKEYFOUND")
 
 lazy val root = (project in file("."))
   .settings(
@@ -27,7 +28,9 @@ lazy val root = (project in file("."))
       "com.typesafe.scala-logging" %% "scala-logging" % loggingVersion
     ),
     addCompilerPlugin("org.typelevel" %% "kind-projector"     % "0.10.3"),
-    addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.1")
+    addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.1"),
+    Revolver.enableDebugging(5050, true),
+    javaOptions += s"-DcensusKey=$censusKey"
   )
 
 scalacOptions ++= Seq(

@@ -32,15 +32,15 @@ object CovidbystatesServer {
 
   def getResource[F[_]: Sync: ContextShift: Timer: ConcurrentEffect](resName: String, blocker: Blocker): F[String] = for {
     resProc <- Concurrent[F].delay(new ResourceProcessor(resName))
-    fipsCSV <- resProc.readLinesFromFile(blocker)
-    _ <- Concurrent[F].delay(L.info("\"getting resource file\" file={} contents={}", resName, fipsCSV))
-  } yield fipsCSV
+    csvLines <- resProc.readLinesFromFile(blocker)
+    _ <- Concurrent[F].delay(L.info("\"getting resource file\" file={} contents={} lines", resName, csvLines.size))
+  } yield csvLines
 
 
   def stream[F[_]: ConcurrentEffect](stateCSV: String, countyCSV: String)(implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = Stream.resource(Blocker[F]).flatMap { blocker =>
 
     val csvStream = for {
-      _ <- Stream.eval(Concurrent[F].delay(L.info("\"got resource file\" contents={}", stateCSV)))
+      _ <- Stream.eval(Concurrent[F].delay(L.info("\"got resource file\" contents={} lines", stateCSV.size)))
       lines <- Stream.emits(stateCSV.split(lineFeed).toList)
         .drop(1)
       parts <- Stream.eval(Concurrent[F].delay(lines.split(delim).toList))
@@ -52,7 +52,7 @@ object CovidbystatesServer {
     } yield ()
 
     val countyCsvStream = for {
-      _ <- Stream.eval(Concurrent[F].delay(L.info("\"got resource file\" contents={}", countyCSV)))
+      _ <- Stream.eval(Concurrent[F].delay(L.info("\"got resource file\" contents={} lines", countyCSV.size)))
       lines <- Stream.emits(countyCSV.split(lineFeed).toList)
         .drop(1)
       parts <- Stream.eval(Concurrent[F].delay(lines.split(delim2).toList))
