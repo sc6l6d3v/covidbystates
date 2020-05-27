@@ -15,8 +15,8 @@ import org.http4s._
 import org.http4s.{EntityDecoder, EntityEncoder}
 
 trait Covid[F[_]] {
-  def getByState(state: String): F[Covid.State]
-  def getByStates(states: List[String]): F[Covid.State]
+  def getByState(state: String, date: String): F[Covid.State]
+  def getByStates(states: List[String], date: String): F[Covid.State]
   def getByCity(state: String, city: String): F[Covid.City]
   def getByCities(state: String, cities: List[String]): F[Covid.City]
 }
@@ -62,8 +62,8 @@ object Covid {
   def impl[F[_]: Concurrent: Sync](C: Client[F], nameMap: ConcurrentHashMap[String, String]): Covid[F] = new Covid[F]{
     val dsl: Http4sClientDsl[F] = new Http4sClientDsl[F]{}
     import dsl._
-    def getByState(state: String): F[State] = {
-      val stateUri = Uri.unsafeFromString(CovidTrackApiUri.builder(CovidTrackApiUri(state)))
+    def getByState(state: String, date: String): F[State] = {
+      val stateUri = Uri.unsafeFromString(CovidTrackApiUri.builder(CovidTrackApiUri(state, date)))
       C.expect[State](GET(stateUri))
         .adaptError { case t => DataError(t) } // Prevent Client Json Decoding Failure Leaking
     }
@@ -75,8 +75,8 @@ object Covid {
         .adaptError { case t => DataError(t) } // Prevent Client Json Decoding Failure Leaking
     }
 
-    override def getByStates(states: List[String]): F[State] = for {
-      stateStats <- states.map(state => getByState(state)).sequence
+    override def getByStates(states: List[String], date: String): F[State] = for {
+      stateStats <- states.map(state => getByState(state, date)).sequence
       stateTotals <- Concurrent[F].delay(stateStats.foldLeft(State("", 0, 0)){ (acc, elem) =>
         acc.copy(state = s"${acc.state},${elem.state}", positive = acc.positive + elem.positive, death = acc.death + elem.death)
       })

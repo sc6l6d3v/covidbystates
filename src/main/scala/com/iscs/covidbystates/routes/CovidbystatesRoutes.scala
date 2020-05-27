@@ -19,14 +19,14 @@ object CovidbystatesRoutes {
     val dsl = new Http4sDsl[F]{}
     import dsl._
     HttpRoutes.of[F] {
-      case GET -> Root / "covidState" / state =>
+      case GET -> Root / "covidState" / state / date =>
         for {
-          grid <- C.getByState(state)
+          grid <- C.getByState(state, date)
           resp <- Ok(grid)
         } yield resp
-      case GET -> Root / "covidStates" / states =>
+      case GET -> Root / "covidStates" / states / date =>
         for {
-          grid <- C.getByStates(states.split(",").toList)
+          grid <- C.getByStates(states.split(",").toList, date)
           resp <- Ok(grid)
         } yield resp
       case GET -> Root / "covidCounties" / state / counties =>
