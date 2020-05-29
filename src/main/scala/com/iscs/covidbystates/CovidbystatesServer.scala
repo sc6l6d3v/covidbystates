@@ -2,7 +2,7 @@ package com.iscs.covidbystates
 
 import java.util.concurrent.ConcurrentHashMap
 
-import cats.effect.{Blocker, Concurrent, ConcurrentEffect, ContextShift, IO, LiftIO, Sync, Timer}
+import cats.effect.{Blocker, Concurrent, ConcurrentEffect, ContextShift, Sync, Timer}
 import cats.implicits._
 import com.iscs.covidbystates.domains.{Census, Covid, Groupings}
 import com.iscs.covidbystates.routes.CovidbystatesRoutes
@@ -13,6 +13,7 @@ import org.http4s.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.server.middleware.{Logger => hpLogger}
 import com.typesafe.scalalogging.Logger
+import dev.profunktor.redis4cats.RedisCommands
 
 import scala.concurrent.ExecutionContext.global
 
@@ -33,14 +34,14 @@ object CovidbystatesServer {
   def getResource[F[_]: Sync: ContextShift: Timer: ConcurrentEffect](resName: String, blocker: Blocker): F[String] = for {
     resProc <- Concurrent[F].delay(new ResourceProcessor(resName))
     csvLines <- resProc.readLinesFromFile(blocker)
-    _ <- Concurrent[F].delay(L.info("\"getting resource file\" file={} contents={} lines", resName, csvLines.size))
+    _ <- Concurrent[F].delay(L.info("\"getting resource file\" file={} contents={} lines", resName, csvLines.length))
   } yield csvLines
 
 
-  def stream[F[_]: ConcurrentEffect](stateCSV: String, countyCSV: String)(implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = Stream.resource(Blocker[F]).flatMap { blocker =>
+  def stream[F[_]: ConcurrentEffect](stateCSV: String, countyCSV: String, cmd: RedisCommands[F, String, String])(implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = Stream.resource(Blocker[F]).flatMap { blocker =>
 
     val csvStream = for {
-      _ <- Stream.eval(Concurrent[F].delay(L.info("\"got resource file\" contents={} lines", stateCSV.size)))
+      _ <- Stream.eval(Concurrent[F].delay(L.info("\"got resource file\" contents={} lines", stateCSV.length)))
       lines <- Stream.emits(stateCSV.split(lineFeed).toList)
         .drop(1)
       parts <- Stream.eval(Concurrent[F].delay(lines.split(delim).toList))
@@ -52,7 +53,7 @@ object CovidbystatesServer {
     } yield ()
 
     val countyCsvStream = for {
-      _ <- Stream.eval(Concurrent[F].delay(L.info("\"got resource file\" contents={} lines", countyCSV.size)))
+      _ <- Stream.eval(Concurrent[F].delay(L.info("\"got resource file\" contents={} lines", countyCSV.length)))
       lines <- Stream.emits(countyCSV.split(lineFeed).toList)
         .drop(1)
       parts <- Stream.eval(Concurrent[F].delay(lines.split(delim2).toList))
@@ -73,7 +74,7 @@ object CovidbystatesServer {
       client <- BlazeClientBuilder[F](global).stream
       helloWorldAlg = HelloWorld.impl[F]
       jokeAlg = Jokes.impl[F](client)
-      censusAlg = Census.impl[F](client, stateCodeMap)
+      censusAlg = Census.impl[F](client, stateCodeMap, cmd)
       groupingsAlg = Groupings.impl[F](stateCountyMap)
       covidAlg = Covid.impl[F](client, stateNameMap)
 
