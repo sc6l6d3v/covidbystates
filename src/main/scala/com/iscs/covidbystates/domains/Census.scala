@@ -68,18 +68,20 @@ object Census {
       key <- Concurrent[F].delay(s"census-$state")
       hasKey <- cmd.exists(key)
       resp <- if (!hasKey) {
-        val fdata = C.expect[Data](GET(popUri))
-          .adaptError { case t => DataError(t) } // Prevent Client Json Decoding Failure Leaking
-        fdata.flatMap{data =>
-          val asString =  data.toString
-          L.info("\"setting key\" key={} value={}", key, asString)
-          cmd.set(key, asString)}
-        fdata
+        for {
+          cdata <- C.expect[Data](GET(popUri)).adaptError { case t => DataError(t) }
+          asString <- Concurrent[F].delay(cdata.toString)
+          _ <- Concurrent[F].delay(L.info("\"setting key\" key={} value={}", key, asString))
+          _ <- cmd.set(key, asString)
+        } yield cdata
       } else
-        cmd.get(key).flatMap(_.map{memVal =>
-          L.info("\"retrieved key\" key={} value={}", key, memVal)
-          Concurrent[F].delay(fromString(memVal))}
-          .getOrElse(Concurrent[F].delay(Data(Map.empty[String, String]))))
+        for {
+          memValOpt <- cmd.get(key)
+          retrieved <- Concurrent[F].delay(memValOpt.map{ memVal =>
+            L.info("\"retrieved key\" key={} value={}", key, memVal)
+            fromString(memVal)
+          }.getOrElse(Data(Map.empty[String, String])))
+        } yield retrieved
     } yield resp
   }
 }

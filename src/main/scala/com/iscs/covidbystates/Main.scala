@@ -14,7 +14,7 @@ object Main extends IOApp {
   private val L = Logger[this.type]
   private val fipsCSV = "fips.csv"
   private val covidCSV = "covid-raw-2020-05-23.csv"
-  private val pwd = Uri.encode(sys.props.get("REDISKEY").getOrElse("REDISKEYNOTFOUND")).replace("@","%40")
+  private val pwd = Uri.encode(System.getenv("REDISKEY")).replace("@","%40")
 
   def run(args: List[String]): IO[ExitCode] = {
     val redis: Resource[IO, RedisCommands[IO, String, String]] =
