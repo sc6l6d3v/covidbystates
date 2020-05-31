@@ -76,7 +76,7 @@ object CovidbystatesServer {
       jokeAlg = Jokes.impl[F](client)
       censusAlg = Census.impl[F](client, stateCodeMap, cmd)
       groupingsAlg = Groupings.impl[F](stateCountyMap)
-      covidAlg = Covid.impl[F](client, stateNameMap)
+      covidAlg = Covid.impl[F](client, stateNameMap, cmd)
 
       // Combine Service Routes into an HttpApp.
       // Can also be done via a Router if you

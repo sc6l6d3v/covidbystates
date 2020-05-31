@@ -13,7 +13,7 @@ case class CensusApiUri(base: String, path: String, state: String) {
 object CensusApiUri {
   val baseUri = "https://api.census.gov"
   val basePath = "/data/2019/pep/population?get=POP,NAME,DENSITY"
-  private val key = System.getenv("CENSUSKEY")
+  private val key = sys.env.get("CENSUSKEY").getOrElse("NOCENSUSKEY")
 
   def apply(inState: String): CensusApiUri =
     CensusApiUri(base = baseUri, path = basePath, state = inState)

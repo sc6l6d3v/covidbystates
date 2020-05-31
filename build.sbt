@@ -6,8 +6,7 @@ val catsRetryVersion = "1.1.0"
 val fs2Version = "2.2.2"
 val loggingVersion = "3.9.2"
 val redis4catsVersion = "0.10.0"
-val censusKey = sys.env.get("CENSUSKEY").getOrElse("NOKEYFOUND")
-val redisKey = sys.env.get("REDISKEY").getOrElse("NOKEYFOUND")
+val upickleVersion = "0.9.5"
 
 lazy val root = (project in file("."))
   .settings(
@@ -24,6 +23,7 @@ lazy val root = (project in file("."))
       "dev.profunktor"   %% "redis4cats-streams"  % redis4catsVersion,
       "dev.profunktor"   %% "redis4cats-effects"  % redis4catsVersion,
       "dev.profunktor"   %% "redis4cats-log4cats" % redis4catsVersion,
+      "com.lihaoyi"      %% "upickle"             % upickleVersion,
       "org.specs2"       %% "specs2-core"         % Specs2Version % "test",
       "ch.qos.logback"   %  "logback-classic"     % LogbackVersion,
       "com.github.cb372" %% "cats-retry"          % catsRetryVersion,
@@ -34,8 +34,7 @@ lazy val root = (project in file("."))
     ),
     addCompilerPlugin("org.typelevel" %% "kind-projector"     % "0.10.3"),
     addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.1"),
-    Revolver.enableDebugging(5050, true),
-    javaOptions ++= Seq(s"-DcensusKey=$censusKey", s"-DREDISKEY=$redisKey")
+    Revolver.enableDebugging(5050, true)
   )
 
 scalacOptions ++= Seq(
