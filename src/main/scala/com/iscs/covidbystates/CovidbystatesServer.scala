@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap
 import cats.effect.{Blocker, Concurrent, ConcurrentEffect, ContextShift, Sync, Timer}
 import cats.implicits._
 import com.iscs.covidbystates.domains.{Census, Covid, Groupings}
+import com.iscs.covidbystates.elect.{Political, Blue, Red}
 import com.iscs.covidbystates.routes.CovidbystatesRoutes
 import com.iscs.covidbystates.util.ResourceProcessor
 import fs2.Stream
@@ -27,6 +28,7 @@ object CovidbystatesServer {
   private val stateCountyMap = new ConcurrentHashMap[String, List[String]]()
   private val electoralRedMap = new ConcurrentHashMap[String, String]()
   private val electoralBlueMap = new ConcurrentHashMap[String, String]()
+  private val electoralBlueRedMap = new ConcurrentHashMap[String, Political]()
   private val electoralStates = new ConcurrentHashMap[String, List[String]]()
 
   private val delim = "\\|"
@@ -81,10 +83,13 @@ object CovidbystatesServer {
         .drop(1)
       parts <- Stream.eval(Concurrent[F].delay(lines.split(delim2).toList))
       _ <- Stream.eval(Concurrent[F].delay{
-        if (parts(4) == "0")
-          electoralRedMap.put(parts(1), parts(3))
-        else
-          electoralBlueMap.put(parts(1), parts(4))
+        if (parts(4) == "0") {
+          electoralRedMap.put(parts(1).toLowerCase(), parts(3))
+          electoralBlueRedMap.put(parts(1).toLowerCase, Red)
+        } else {
+          electoralBlueMap.put(parts(1).toLowerCase, parts(4))
+          electoralBlueRedMap.put(parts(1).toLowerCase, Blue)
+        }
       })
     } yield ()
 
@@ -104,7 +109,7 @@ object CovidbystatesServer {
       jokeAlg = Jokes.impl[F](client)
       censusAlg = Census.impl[F](client, stateCodeMap, cmd)
       groupingsAlg = Groupings.impl[F](stateCountyMap)
-      covidAlg = Covid.impl[F](client, stateNameMap, cmd)
+      covidAlg = Covid.impl[F](client, stateNameMap, electoralBlueRedMap, cmd)
 
       // Combine Service Routes into an HttpApp.
       // Can also be done via a Router if you

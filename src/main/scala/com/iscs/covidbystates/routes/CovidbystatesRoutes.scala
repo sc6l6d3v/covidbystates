@@ -21,12 +21,12 @@ object CovidbystatesRoutes {
     HttpRoutes.of[F] {
       case GET -> Root / "covidState" / state / date =>
         for {
-          grid <- C.getByState(state, date)
+          grid <- C.getByState(state.toLowerCase, date)
           resp <- Ok(grid)
         } yield resp
       case GET -> Root / "covidStates" / states / date =>
         for {
-          grid <- C.getByStates(states.split(",").toList, date)
+          grid <- C.getByStates(states.split(",").toList.map(s => s.toLowerCase), date)
           resp <- Ok(grid)
         } yield resp
       case GET -> Root / "covidCounties" / state / counties =>
