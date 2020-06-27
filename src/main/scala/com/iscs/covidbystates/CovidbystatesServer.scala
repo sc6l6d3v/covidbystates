@@ -16,6 +16,7 @@ import com.typesafe.scalalogging.Logger
 import dev.profunktor.redis4cats.RedisCommands
 
 import scala.concurrent.ExecutionContext.global
+import scala.jdk.CollectionConverters._
 
 object CovidbystatesServer {
 
@@ -24,6 +25,9 @@ object CovidbystatesServer {
   private val stateNSMap = new ConcurrentHashMap[String, String]()
   private val countyStateMap = new ConcurrentHashMap[String, String]()
   private val stateCountyMap = new ConcurrentHashMap[String, List[String]]()
+  private val electoralRedMap = new ConcurrentHashMap[String, String]()
+  private val electoralBlueMap = new ConcurrentHashMap[String, String]()
+  private val electoralStates = new ConcurrentHashMap[String, List[String]]()
 
   private val delim = "\\|"
   private val delim2 = ","
@@ -38,7 +42,8 @@ object CovidbystatesServer {
   } yield csvLines
 
 
-  def stream[F[_]: ConcurrentEffect](stateCSV: String, countyCSV: String, cmd: RedisCommands[F, String, String])(implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = Stream.resource(Blocker[F]).flatMap { blocker =>
+  def stream[F[_]: ConcurrentEffect](stateCSV: String, countyCSV: String, electoralCSV: String,
+                                     cmd: RedisCommands[F, String, String])(implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = Stream.resource(Blocker[F]).flatMap { blocker =>
 
     val csvStream = for {
       _ <- Stream.eval(Concurrent[F].delay(L.info("\"got resource file\" contents={} lines", stateCSV.length)))
@@ -70,6 +75,29 @@ object CovidbystatesServer {
         }})
     } yield ()
 
+    val electoralCsvStream = for {
+      _ <- Stream.eval(Concurrent[F].delay(L.info("\"got resource file\" contents={} lines", electoralCSV.length)))
+      lines <- Stream.emits(electoralCSV.split(lineFeed).toList)
+        .drop(1)
+      parts <- Stream.eval(Concurrent[F].delay(lines.split(delim2).toList))
+      _ <- Stream.eval(Concurrent[F].delay{
+        if (parts(4) == "0")
+          electoralRedMap.put(parts(1), parts(3))
+        else
+          electoralBlueMap.put(parts(1), parts(4))
+      })
+    } yield ()
+
+    val redStream = for {
+      redStates <-  Stream.eval(Concurrent[F].delay(electoralRedMap.keys().asScala.toList))
+      _ <- Stream.eval(Concurrent[F].delay(electoralStates.put("red", redStates)))
+    } yield ()
+
+    val blueStream = for {
+      blueStates <- Stream.eval(Concurrent[F].delay(electoralBlueMap.keys().asScala.toList))
+      _ <- Stream.eval(Concurrent[F].delay(electoralStates.put("blue", blueStates)))
+    } yield ()
+
     val srvStream = for {
       client <- BlazeClientBuilder[F](global).stream
       helloWorldAlg = HelloWorld.impl[F]
@@ -99,7 +127,6 @@ object CovidbystatesServer {
         .withHttpApp(finalHttpApp)
         .serve
     } yield exitCode
-    val stream2 = (csvStream ++ countyCsvStream ++ srvStream).drain
-    stream2
+    (electoralCsvStream ++ redStream ++ blueStream ++ csvStream ++ countyCsvStream ++ srvStream).drain
   }
 }

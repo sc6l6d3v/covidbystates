@@ -14,7 +14,8 @@ object Main extends IOApp {
   private val L = Logger[this.type]
   private val fipsCSV = "fips.csv"
   private val covidCSV = "covid-raw-2020-05-23.csv"
-  private val pwd = Uri.encode(sys.env.get("REDISKEY").getOrElse("NOREDISKEY")).replace("@","%40")
+  private val electoralCSV = "electoral.csv"
+  private val pwd = Uri.encode(sys.env.getOrElse("REDISKEY", "NOREDISKEY")).replace("@","%40")
 
   def run(args: List[String]): IO[ExitCode] = {
     val redis: Resource[IO, RedisCommands[IO, String, String]] =
@@ -39,7 +40,13 @@ object Main extends IOApp {
           L.error("\"could not read {}\" ex={}", covidCSV, ex.toString)
           Stream.eval(Concurrent[IO].pure("STATE|STUSAB|STATE_NAME|STATENS\n12|FL|Florida|00294478"))
         }
-        str <- CovidbystatesServer.stream[IO](resCSV, countyCSV, cmd)
+        electCSV <- Stream.eval(Blocker[IO].use { blocker =>
+          CovidbystatesServer.getResource[IO](electoralCSV, blocker)
+        }).handleErrorWith { ex =>
+          L.error("\"could not read {}\" ex={}", electoralCSV, ex.toString)
+          Stream.eval(Concurrent[IO].pure("STATE|STUSAB|STATE_NAME|STATENS\n12|FL|Florida|00294478"))
+        }
+        str <- CovidbystatesServer.stream[IO](resCSV, countyCSV, electCSV, cmd)
       } yield str
 
       serverStream
