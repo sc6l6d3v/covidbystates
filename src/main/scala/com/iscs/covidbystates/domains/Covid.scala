@@ -51,6 +51,8 @@ object Covid {
     implicit def stateEntityDecoder[F[_]: Sync]: EntityDecoder[F, State] = jsonOf
     implicit val stateEncoder: Encoder[State] = deriveEncoder[State]
     implicit def stateEntityEncoder[F[_]: Sync]: EntityEncoder[F, State] = jsonEncoderOf
+
+    def empty: State = State("", "", 0, 0)
   }
 
   object City {
@@ -70,6 +72,8 @@ object Covid {
     implicit def cityEntityDecoder[F[_]: Sync]: EntityDecoder[F, City] = jsonOf
     implicit val cityEncoder: Encoder[City] = deriveEncoder[City]
     implicit def cityEntityEncoder[F[_]: Sync]: EntityEncoder[F, City] = jsonEncoderOf
+
+    def empty: City = City("", "", "", 0, 0)
   }  
 
   final case class DataError(e: Throwable) extends RuntimeException
@@ -83,27 +87,42 @@ object Covid {
                                    cmd: RedisCommands[F, String, String]): Covid[F] = new Covid[F]{
     val dsl: Http4sClientDsl[F] = new Http4sClientDsl[F]{}
     import dsl._
+
+    def getCityFromRedis(key: String): F[City] = for {
+      memValOpt <- cmd.get(key)
+      retrieved <- Concurrent[F].delay(memValOpt.map{ memVal =>
+        L.info("\"retrieved key\" key={} value={}", key, memVal)
+        fromCity(memVal)
+      }.getOrElse(City.empty))
+    } yield retrieved
+
+    def getStateFromRedis(key: String): F[State] = for {
+      memValOpt <- cmd.get(key)
+      retrieved <- Concurrent[F].delay(memValOpt.map{ memVal =>
+        L.info("\"retrieved key\" key={} value={}", key, memVal)
+        fromState(memVal)
+      }.getOrElse(State.empty))
+    } yield retrieved
+
+    def setRedisKey(key: String, inpValue: String): F[Unit] = for {
+      asString <- Concurrent[F].delay(inpValue)
+      _ <- Concurrent[F].delay(L.info("\"setting key\" key={} value={}", key, asString))
+      _ <- cmd.set(key, asString)
+    } yield ()
+
     def getByState(state: String, date: String): F[State] =  for {
       key <- Concurrent[F].delay(s"covState:$state:$date")
-      vote <- Concurrent[F].delay(if (electMap.containsKey(state)) electMap.get(state).toString else "")
       hasKey <- cmd.exists(key)
       stateUri <- Concurrent[F].delay(Uri.unsafeFromString(CovidTrackApiUri.builder(CovidTrackApiUri(state, date))))
       resp <- if (!hasKey) {
         for {
           cdata <- C.expect[State](GET(stateUri)).adaptError { case t => DataError(t) }
+          vote <- Concurrent[F].delay(if (electMap.containsKey(state)) electMap.get(state).toString else "")
           cdataWithVote <- Concurrent[F].delay(cdata.copy(vote = vote))
-          asString <- Concurrent[F].delay(cdataWithVote.toString)
-          _ <- Concurrent[F].delay(L.info("\"setting key\" key={} value={}", key, asString))
-          _ <- cmd.set(key, asString)
-        } yield cdata
+          _ <- setRedisKey(key, cdataWithVote.toString)
+        } yield cdataWithVote
       } else
-        for {
-          memValOpt <- cmd.get(key)
-          retrieved <- Concurrent[F].delay(memValOpt.map{ memVal =>
-            L.info("\"retrieved key\" key={} value={}", key, memVal)
-            fromState(memVal).copy(vote = vote)
-          }.getOrElse(State("", "", 0, 0)))
-        } yield retrieved
+        getStateFromRedis(key)
     } yield resp
 
     override def getByCity(state: String, city: String): F[City] = for {
@@ -111,46 +130,55 @@ object Covid {
       resp <- stateNameOpt match {
         case Some(stateName) =>
           for {
-            vote <- Concurrent[F].delay(if (electMap.containsKey(state.toLowerCase)) electMap.get(state.toLowerCase).toString else "")
             key <- Concurrent[F].delay(s"covCity:$state:$city")
             hasKey <- cmd.exists(key)
             innerResp <- if (!hasKey) {
               for {
                 cityUri <-  Concurrent[F].delay(Uri.unsafeFromString(CovidApiUri.builder(CovidApiUri(stateName, city))))
                 cdata <- C.expect[City](GET(cityUri)).adaptError { case t => DataError(t) }
+                vote <- Concurrent[F].delay(if (electMap.containsKey(state.toLowerCase)) electMap.get(state.toLowerCase).toString else "")
                 cdataWithVote <- Concurrent[F].delay(cdata.copy(vote = vote))
-                asString <- Concurrent[F].delay(cdataWithVote.toString)
-                _ <- Concurrent[F].delay(L.info("\"setting key\" key={} value={}", key, asString))
-                _ <- cmd.set(key, asString)
+                _ <- setRedisKey(key, cdataWithVote.toString)
               } yield cdataWithVote
             } else
-              for {
-                memValOpt <- cmd.get(key)
-                retrieved <- Concurrent[F].delay(memValOpt.map{ memVal =>
-                  L.info("\"retrieved key\" key={} value={}", key, memVal)
-                  fromCity(memVal).copy(vote = vote)
-                }.getOrElse(City("", "", "", 0, 0)))
-              } yield retrieved
+              getCityFromRedis(key)
           } yield innerResp
-        case None           => Concurrent[F].delay(City("", "", "", 0, 0))
+        case None           => Concurrent[F].delay(City.empty)
       }
     } yield resp
 
     override def getByStates(states: List[String], date: String): F[State] = for {
-      stateStats <- states.map(state => getByState(state, date)).sequence
-      stateTotals <- Concurrent[F].delay(stateStats.tail.foldLeft(stateStats.head){ (acc, elem) =>
-        acc.copy(state = s"${acc.state},${elem.state}", s"${acc.vote},${elem.vote}", positive = acc.positive + elem.positive, death = acc.death + elem.death)
-      })
-    } yield stateTotals
+      key <- Concurrent[F].delay(s"covStates:${states.mkString(",")}:$date")
+      hasKey <- cmd.exists(key)
+      innerResp <- if (!hasKey) {
+        for {
+          stateStats <- states.map(state => getByState(state, date)).sequence
+          stateTotals <- Concurrent[F].delay(stateStats.tail.foldLeft(stateStats.head) { (acc, elem) =>
+            acc.copy(state = s"${acc.state},${elem.state}", vote = s"${acc.vote},${elem.vote}",
+              positive = acc.positive + elem.positive, death = acc.death + elem.death)
+          })
+          _ <- setRedisKey(key, stateTotals.toString)
+        } yield stateTotals
+      } else
+        getStateFromRedis(key)
+    } yield innerResp
 
     override def getByCities(state: String, cities: List[String]): F[City] = for {
-      cityStats <- cities.map(city => getByCity(state, city)).sequence
-      cityTotals <- Concurrent[F].delay(cityStats.tail.foldLeft(cityStats.head){ (acc, elem) =>
-        acc.copy(city = s"${acc.city},${elem.city}",
-          vote = s"${acc.vote},${elem.vote}",
-          confirmed = acc.confirmed + elem.confirmed, deaths = acc.deaths + elem.deaths)
-      })
-    } yield cityTotals
+      key <- Concurrent[F].delay(s"covCities:$state:${cities.mkString(",")}")
+      hasKey <- cmd.exists(key)
+      innerResp <- if (!hasKey) {
+        for {
+          cityStats <- cities.map(city => getByCity(state, city)).sequence
+          cityTotals <- Concurrent[F].delay(cityStats.tail.foldLeft(cityStats.head) { (acc, elem) =>
+            acc.copy(city = s"${acc.city},${elem.city}",
+              vote = s"${acc.vote},${elem.vote}",
+              confirmed = acc.confirmed + elem.confirmed, deaths = acc.deaths + elem.deaths)
+          })
+          _ <- setRedisKey(key, cityTotals.toString)
+        } yield cityTotals
+      } else
+        getCityFromRedis(key)
+    } yield innerResp
   }
 }
 
