@@ -15,6 +15,7 @@ object Main extends IOApp {
   private val fipsCSV = "fips.csv"
   private val covidCSV = "covid-raw-2020-05-23.csv"
   private val electoralCSV = "electoral.csv"
+  private val winnerCSV = "winner.csv"
   private val pwd = Uri.encode(sys.env.getOrElse("REDISKEY", "NOREDISKEY")).replace("@","%40")
 
   def run(args: List[String]): IO[ExitCode] = {
@@ -46,7 +47,13 @@ object Main extends IOApp {
           L.error("\"could not read {}\" ex={}", electoralCSV, ex.toString)
           Stream.eval(Concurrent[IO].pure("STATE|STUSAB|STATE_NAME|STATENS\n12|FL|Florida|00294478"))
         }
-        str <- CovidbystatesServer.stream[IO](resCSV, countyCSV, electCSV, cmd)
+        countyWinnerCSV <- Stream.eval(Blocker[IO].use { blocker =>
+          CovidbystatesServer.getResource[IO](winnerCSV, blocker)
+        }).handleErrorWith { ex =>
+          L.error("\"could not read {}\" ex={}", winnerCSV, ex.toString)
+          Stream.eval(Concurrent[IO].pure("STATE|STUSAB|STATE_NAME|STATENS\n12|FL|Florida|00294478"))
+        }
+        str <- CovidbystatesServer.stream[IO](resCSV, countyCSV, electCSV, countyWinnerCSV, cmd)
       } yield str
 
       serverStream

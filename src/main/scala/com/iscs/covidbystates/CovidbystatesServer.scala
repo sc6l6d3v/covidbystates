@@ -30,6 +30,7 @@ object CovidbystatesServer {
   private val electoralBlueMap = new ConcurrentHashMap[String, String]()
   private val electoralBlueRedMap = new ConcurrentHashMap[String, Political]()
   private val electoralStates = new ConcurrentHashMap[String, List[String]]()
+  private val countyBlueRedMap = new ConcurrentHashMap[String, Political]()
 
   private val delim = "\\|"
   private val delim2 = ","
@@ -44,8 +45,9 @@ object CovidbystatesServer {
   } yield csvLines
 
 
-  def stream[F[_]: ConcurrentEffect](stateCSV: String, countyCSV: String, electoralCSV: String,
-                                     cmd: RedisCommands[F, String, String])(implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = Stream.resource(Blocker[F]).flatMap { blocker =>
+  def stream[F[_]: ConcurrentEffect](stateCSV: String, countyCSV: String, electoralCSV: String, winnerCSV: String,
+                                     cmd: RedisCommands[F, String, String])
+                                    (implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = Stream.resource(Blocker[F]).flatMap { blocker =>
 
     val csvStream = for {
       _ <- Stream.eval(Concurrent[F].delay(L.info("\"got resource file\" contents={} lines", stateCSV.length)))
@@ -93,6 +95,20 @@ object CovidbystatesServer {
       })
     } yield ()
 
+    val winnerCsvStream = for {
+      _ <- Stream.eval(Concurrent[F].delay(L.info("\"got resource file\" contents={} lines", winnerCSV.length)))
+      lines <- Stream.emits(winnerCSV.split(lineFeed).toList)
+        .drop(1)
+      parts <- Stream.eval(Concurrent[F].delay(lines.split(delim2).toList))
+      _ <- Stream.eval(Concurrent[F].delay{
+        if (parts(2) == "trump") {
+          countyBlueRedMap.put(s"${parts(0)}-${parts(1)}".toLowerCase, Red)
+        } else {
+          countyBlueRedMap.put(s"${parts(0)}-${parts(1)}".toLowerCase, Blue)
+        }
+      })
+    } yield ()
+
     val redStream = for {
       redStates <-  Stream.eval(Concurrent[F].delay(electoralRedMap.keys().asScala.toList))
       _ <- Stream.eval(Concurrent[F].delay(electoralStates.put("red", redStates)))
@@ -109,7 +125,7 @@ object CovidbystatesServer {
       jokeAlg = Jokes.impl[F](client)
       censusAlg = Census.impl[F](client, stateCodeMap, cmd)
       groupingsAlg = Groupings.impl[F](stateCountyMap)
-      covidAlg = Covid.impl[F](client, stateNameMap, electoralBlueRedMap, cmd)
+      covidAlg = Covid.impl[F](client, stateNameMap, countyBlueRedMap, electoralBlueRedMap, cmd)
 
       // Combine Service Routes into an HttpApp.
       // Can also be done via a Router if you
@@ -132,6 +148,6 @@ object CovidbystatesServer {
         .withHttpApp(finalHttpApp)
         .serve
     } yield exitCode
-    (electoralCsvStream ++ redStream ++ blueStream ++ csvStream ++ countyCsvStream ++ srvStream).drain
+    (electoralCsvStream ++ redStream ++ blueStream ++ csvStream ++ countyCsvStream ++ winnerCsvStream ++ srvStream).drain
   }
 }

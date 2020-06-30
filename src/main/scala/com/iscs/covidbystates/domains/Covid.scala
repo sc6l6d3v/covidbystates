@@ -83,6 +83,7 @@ object Covid {
   private def fromState(state: String): State = read[State](state)
 
   def impl[F[_]: Concurrent: Sync](C: Client[F], nameMap: ConcurrentHashMap[String, String],
+                                   countyElectMap: ConcurrentHashMap[String, Political],
                                    electMap: ConcurrentHashMap[String, Political],
                                    cmd: RedisCommands[F, String, String]): Covid[F] = new Covid[F]{
     val dsl: Http4sClientDsl[F] = new Http4sClientDsl[F]{}
@@ -136,7 +137,8 @@ object Covid {
               for {
                 cityUri <-  Concurrent[F].delay(Uri.unsafeFromString(CovidApiUri.builder(CovidApiUri(stateName, city))))
                 cdata <- C.expect[City](GET(cityUri)).adaptError { case t => DataError(t) }
-                vote <- Concurrent[F].delay(if (electMap.containsKey(state.toLowerCase)) electMap.get(state.toLowerCase).toString else "")
+                countyCityKey <- Concurrent[F].delay(s"$state-$city".toLowerCase)
+                vote <- Concurrent[F].delay(if (countyElectMap.containsKey(countyCityKey)) countyElectMap.get(countyCityKey).toString else "")
                 cdataWithVote <- Concurrent[F].delay(cdata.copy(vote = vote))
                 _ <- setRedisKey(key, cdataWithVote.toString)
               } yield cdataWithVote
