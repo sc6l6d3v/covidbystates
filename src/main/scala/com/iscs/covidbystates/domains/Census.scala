@@ -15,7 +15,7 @@ import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
 import org.http4s.{EntityDecoder, EntityEncoder, Uri}
 
-trait Census[F[_]]{
+trait Census[F[_]] extends Cache[F] {
   def get(state: String): F[Census.Data]
 }
 
@@ -47,7 +47,7 @@ object Census {
 
   final case class DataError(e: Throwable) extends RuntimeException
 
-  private def fromString(inp: String): Data =
+  def fromString(inp: String): Data =
     Data(inp.split("\\|")
       .toList
       .map(_
@@ -55,11 +55,11 @@ object Census {
         .toList
       )
       .map(ll =>
-        (ll.head -> ll.last)
+        ll.head -> ll.last
       )
       .toMap)
 
-  def impl[F[_]: Concurrent](C: Client[F], stateMap: ConcurrentHashMap[String, String], cmd: RedisCommands[F, String, String]): Census[F] = new Census[F]{
+  def impl[F[_]: Concurrent](C: Client[F], stateMap: ConcurrentHashMap[String, String])(implicit cmd: RedisCommands[F, String, String]): Census[F] = new Census[F]{
     val dsl: Http4sClientDsl[F] = new Http4sClientDsl[F]{}
     import dsl._
     def get(state: String): F[Data] = for {
@@ -70,18 +70,10 @@ object Census {
       resp <- if (!hasKey) {
         for {
           cdata <- C.expect[Data](GET(popUri)).adaptError { case t => DataError(t) }
-          asString <- Concurrent[F].delay(cdata.toString)
-          _ <- Concurrent[F].delay(L.info("\"setting key\" key={} value={}", key, asString))
-          _ <- cmd.set(key, asString)
+          _ <- setRedisKey(key, cdata.toString)
         } yield cdata
       } else
-        for {
-          memValOpt <- cmd.get(key)
-          retrieved <- Concurrent[F].delay(memValOpt.map{ memVal =>
-            L.info("\"retrieved key\" key={} value={}", key, memVal)
-            fromString(memVal)
-          }.getOrElse(Data(Map.empty[String, String])))
-        } yield retrieved
+        getCensusFromRedis(key)
     } yield resp
   }
 }

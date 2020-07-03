@@ -19,7 +19,7 @@ import org.http4s.{EntityDecoder, EntityEncoder}
 import upickle.default._
 import upickle.default.{macroRW, ReadWriter => RW}
 
-trait Covid[F[_]] {
+trait Covid[F[_]] extends Cache[F] {
   def getByState(state: String, date: String): F[Covid.State]
   def getByStates(states: List[String], date: String): F[Covid.State]
   def getByCity(state: String, city: String): F[Covid.City]
@@ -78,38 +78,16 @@ object Covid {
 
   final case class DataError(e: Throwable) extends RuntimeException
 
-  private def fromCity(city: String): City = read[City](city)
+  def fromCity(city: String): City = read[City](city)
 
-  private def fromState(state: String): State = read[State](state)
+  def fromState(state: String): State = read[State](state)
 
   def impl[F[_]: Concurrent: Sync](C: Client[F], nameMap: ConcurrentHashMap[String, String],
                                    countyElectMap: ConcurrentHashMap[String, Political],
-                                   electMap: ConcurrentHashMap[String, Political],
-                                   cmd: RedisCommands[F, String, String]): Covid[F] = new Covid[F]{
+                                   electMap: ConcurrentHashMap[String, Political])
+                                  (implicit cmd: RedisCommands[F, String, String]): Covid[F] = new Covid[F]{
     val dsl: Http4sClientDsl[F] = new Http4sClientDsl[F]{}
     import dsl._
-
-    def getCityFromRedis(key: String): F[City] = for {
-      memValOpt <- cmd.get(key)
-      retrieved <- Concurrent[F].delay(memValOpt.map{ memVal =>
-        L.info("\"retrieved key\" key={} value={}", key, memVal)
-        fromCity(memVal)
-      }.getOrElse(City.empty))
-    } yield retrieved
-
-    def getStateFromRedis(key: String): F[State] = for {
-      memValOpt <- cmd.get(key)
-      retrieved <- Concurrent[F].delay(memValOpt.map{ memVal =>
-        L.info("\"retrieved key\" key={} value={}", key, memVal)
-        fromState(memVal)
-      }.getOrElse(State.empty))
-    } yield retrieved
-
-    def setRedisKey(key: String, inpValue: String): F[Unit] = for {
-      asString <- Concurrent[F].delay(inpValue)
-      _ <- Concurrent[F].delay(L.info("\"setting key\" key={} value={}", key, asString))
-      _ <- cmd.set(key, asString)
-    } yield ()
 
     def getByState(state: String, date: String): F[State] =  for {
       key <- Concurrent[F].delay(s"covState:$state:$date")

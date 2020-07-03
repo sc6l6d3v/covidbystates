@@ -45,9 +45,9 @@ object CovidbystatesServer {
   } yield csvLines
 
 
-  def stream[F[_]: ConcurrentEffect](stateCSV: String, countyCSV: String, electoralCSV: String, winnerCSV: String,
-                                     cmd: RedisCommands[F, String, String])
-                                    (implicit T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = Stream.resource(Blocker[F]).flatMap { blocker =>
+  def stream[F[_]: ConcurrentEffect](stateCSV: String, countyCSV: String, electoralCSV: String, winnerCSV: String)
+                                    (implicit cmd: RedisCommands[F, String, String],
+                                    T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = Stream.resource(Blocker[F]).flatMap { blocker =>
 
     val csvStream = for {
       _ <- Stream.eval(Concurrent[F].delay(L.info("\"got resource file\" contents={} lines", stateCSV.length)))
@@ -123,9 +123,9 @@ object CovidbystatesServer {
       client <- BlazeClientBuilder[F](global).stream
       helloWorldAlg = HelloWorld.impl[F]
       jokeAlg = Jokes.impl[F](client)
-      censusAlg = Census.impl[F](client, stateCodeMap, cmd)
+      censusAlg = Census.impl[F](client, stateCodeMap)
       groupingsAlg = Groupings.impl[F](stateCountyMap)
-      covidAlg = Covid.impl[F](client, stateNameMap, countyBlueRedMap, electoralBlueRedMap, cmd)
+      covidAlg = Covid.impl[F](client, stateNameMap, countyBlueRedMap, electoralBlueRedMap)
 
       // Combine Service Routes into an HttpApp.
       // Can also be done via a Router if you

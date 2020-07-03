@@ -27,6 +27,7 @@ object Main extends IOApp {
       } yield cmd
 
     redis.use { cmd =>
+      implicit val redisCmd: RedisCommands[IO, String, String] = cmd
 
       val serverStream = for {
         resCSV <- Stream.eval(Blocker[IO].use { blocker =>
@@ -53,7 +54,7 @@ object Main extends IOApp {
           L.error("\"could not read {}\" ex={}", winnerCSV, ex.toString)
           Stream.eval(Concurrent[IO].pure("STATE|STUSAB|STATE_NAME|STATENS\n12|FL|Florida|00294478"))
         }
-        str <- CovidbystatesServer.stream[IO](resCSV, countyCSV, electCSV, countyWinnerCSV, cmd)
+        str <- CovidbystatesServer.stream[IO](resCSV, countyCSV, electCSV, countyWinnerCSV)
       } yield str
 
       serverStream
