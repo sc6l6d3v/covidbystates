@@ -12,7 +12,7 @@ case class CovidTrackApiUri(base: String, path: String, state: String, date: Str
 
   def withState(newState: String): CovidTrackApiUri = copy(state = newState)
 
-  def blank = CovidTrackApiUri(base = "", path = "", state =  "")
+  def blank = CovidTrackApiUri(base = "", path = "", state =  "", date = date)
 }
 
 object CovidTrackApiUri {

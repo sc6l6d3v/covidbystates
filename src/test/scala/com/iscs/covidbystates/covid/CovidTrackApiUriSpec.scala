@@ -16,7 +16,7 @@ class CovidTrackApiUriSpec extends org.specs2.mutable.Specification {
 
 
   def asBlankCheck(): MatchResult[String] =
-    CovidTrackApiUri.builder(CovidTrackApiUri("", "2020-05-21").blank) must beEqualTo("//20200528.json")
+    CovidTrackApiUri.builder(CovidTrackApiUri("", "2020-05-21").blank) must beEqualTo("//20200521.json")
 
 
   "CovidTrackApiURI" >> {
