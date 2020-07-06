@@ -16,12 +16,16 @@ object Main extends IOApp {
   private val covidCSV = "covid-raw-2020-05-23.csv"
   private val electoralCSV = "electoral.csv"
   private val winnerCSV = "winner.csv"
+  private val redisHost= sys.env.getOrElse("REDISHOST", "localhost")
   private val pwd = Uri.encode(sys.env.getOrElse("REDISKEY", "NOREDISKEY")).replace("@","%40")
 
   def run(args: List[String]): IO[ExitCode] = {
     val redis: Resource[IO, RedisCommands[IO, String, String]] =
       for {
-        uri <- Resource.liftF(RedisURI.make[IO](s"redis://$pwd@localhost"))
+        uri <- Resource.liftF{
+          L.info("\"starting Redis\" host={}", redisHost)
+          RedisURI.make[IO](s"redis://$pwd@$redisHost")
+        }
         cli <- RedisClient[IO](uri)
         cmd <- Redis[IO].fromClient(cli, RedisCodec.Utf8)
       } yield cmd

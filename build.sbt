@@ -12,7 +12,7 @@ lazy val root = (project in file("."))
   .settings(
     organization := "com.iscs",
     name := "covidbystates",
-    version := "0.0.1-SNAPSHOT",
+    version := "0.1-SNAPSHOT",
     scalaVersion := "2.13.1",
     libraryDependencies ++= Seq(
       "org.http4s"       %% "http4s-blaze-server" % Http4sVersion,
@@ -45,3 +45,8 @@ scalacOptions ++= Seq(
   "-feature",
   "-Xfatal-warnings",
 )
+
+assemblyMergeStrategy in assembly := {
+  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+  case x => MergeStrategy.first
+}
