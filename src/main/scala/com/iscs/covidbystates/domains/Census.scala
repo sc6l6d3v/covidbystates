@@ -8,6 +8,7 @@ import com.iscs.covidbystates.census.CensusApiUri
 import com.typesafe.scalalogging.Logger
 import dev.profunktor.redis4cats.RedisCommands
 import io.circe.generic.semiauto._
+import io.circe.syntax._
 import io.circe.{Decoder, Encoder, HCursor}
 import org.http4s.Method._
 import org.http4s.circe._
@@ -70,7 +71,7 @@ object Census {
       resp <- if (!hasKey) {
         for {
           cdata <- C.expect[Data](GET(popUri)).adaptError { case t => DataError(t) }
-          _ <- setRedisKey(key, cdata.toString)
+          _ <- setRedisKey(key, cdata.asJson.toString)
         } yield cdata
       } else
         getCensusFromRedis(key)

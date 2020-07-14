@@ -7,10 +7,9 @@ import cats.implicits._
 import dev.profunktor.redis4cats.RedisCommands
 import io.circe._
 import io.circe.generic.semiauto._
+import io.circe.parser._
 import org.http4s.circe._
 import org.http4s.{EntityDecoder, EntityEncoder}
-import upickle.default._
-import upickle.default.{macroRW, ReadWriter => RW}
 
 trait Groupings[F[_]] extends Cache[F] {
   def getByCounty(state: String): F[Groupings.County]
@@ -21,33 +20,32 @@ object Groupings {
   def apply[F[_]](implicit ev: Groupings[F]): Groupings[F] = ev
 
   final case class County(state: String, counties: List[String]) {
-    override def toString: String = write(this)
+    override def toString: String = s"$this"
   }
   final case class State(country: String, states: List[String]) {
-    override def toString: String = write(this)
+    override def toString: String = s"$this"
   }
 
   object County {
-    implicit val rw: RW[County] = macroRW
-
     implicit val countyDecoder: Decoder[County] = deriveDecoder[County]
     implicit def countyEntityDecoder[F[_]: Sync]: EntityDecoder[F, County] = jsonOf
     implicit val countyEncoder: Encoder[County] = deriveEncoder[County]
     implicit def countyEntityEncoder[F[_]: Sync]: EntityEncoder[F, County] = jsonEncoderOf
+    def empty: County = County("", List.empty[String])
   }
 
   object State {
-    implicit val rw: RW[State] = macroRW
-
     implicit val stateDecoder: Decoder[State] = deriveDecoder[State]
     implicit def stateEntityDecoder[F[_]: Sync]: EntityDecoder[F, State] = jsonOf
     implicit val stateEncoder: Encoder[State] = deriveEncoder[State]
     implicit def stateEntityEncoder[F[_]: Sync]: EntityEncoder[F, State] = jsonEncoderOf
+
+    def empty: State = State("", List.empty[String])
   }
 
-  def fromCounty(county: String): County = read[County](county)
+  def fromCounty(county: String): County = parse(county).getOrElse(Json.Null).as[County].getOrElse(County.empty)
 
-  def fromState(state: String): State = read[State](state)
+  def fromState(state: String): State = parse(state).getOrElse(Json.Null).as[State].getOrElse(State.empty)
 
   final case class DataError(e: Throwable) extends RuntimeException
 

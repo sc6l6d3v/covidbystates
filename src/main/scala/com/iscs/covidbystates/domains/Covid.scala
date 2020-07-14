@@ -10,14 +10,14 @@ import com.typesafe.scalalogging.Logger
 import dev.profunktor.redis4cats.RedisCommands
 import io.circe._
 import io.circe.generic.semiauto._
+import io.circe.parser._
+import io.circe.syntax._
 import org.http4s.Method._
 import org.http4s.circe._
 import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
 import org.http4s._
 import org.http4s.{EntityDecoder, EntityEncoder}
-import upickle.default._
-import upickle.default.{macroRW, ReadWriter => RW}
 
 trait Covid[F[_]] extends Cache[F] {
   def getByState(state: String, date: String): F[Covid.State]
@@ -32,15 +32,13 @@ object Covid {
   def apply[F[_]](implicit ev: Covid[F]): Covid[F] = ev
 
   final case class State(state: String, vote: String = "", positive: Int, death: Int) {
-    override def toString: String = write(this)
+    override def toString: String = s"$this"
   }
   final case class City(state: String, city: String, vote: String = "", confirmed: Int, deaths: Int) {
-    override def toString: String =  write(this)
+    override def toString: String =  s"$this"
   }
 
   object State {
-    implicit val rw: RW[State] = macroRW
-
     implicit val stateDecoder: Decoder[State] = (c: HCursor) => {
       val state = c.downField("state").as[String].getOrElse("NOSTATE")
       val positive = c.downField("positive").as[Int].getOrElse(0)
@@ -56,8 +54,6 @@ object Covid {
   }
 
   object City {
-    implicit val rw: RW[City] = macroRW
-
     implicit val cityDecoder: Decoder[City] = (c: HCursor) => {
       val topObj = c.downField("data").downArray
       val regionObj = topObj.downField("region")
@@ -78,9 +74,9 @@ object Covid {
 
   final case class DataError(e: Throwable) extends RuntimeException
 
-  def fromCity(city: String): City = read[City](city)
+  def fromCity(city: String): City = parse(city).getOrElse(Json.Null).as[City].getOrElse(City.empty)
 
-  def fromState(state: String): State = read[State](state)
+  def fromState(state: String): State = parse(state).getOrElse(Json.Null).as[State].getOrElse(State.empty)
 
   def impl[F[_]: Concurrent: Sync](C: Client[F], nameMap: ConcurrentHashMap[String, String],
                                    countyElectMap: ConcurrentHashMap[String, Political],
@@ -98,7 +94,7 @@ object Covid {
           cdata <- C.expect[State](GET(stateUri)).adaptError { case t => DataError(t) }
           vote <- Concurrent[F].delay(if (electMap.containsKey(state)) electMap.get(state).toString else "")
           cdataWithVote <- Concurrent[F].delay(cdata.copy(vote = vote))
-          _ <- setRedisKey(key, cdataWithVote.toString)
+          _ <- setRedisKey(key, cdataWithVote.asJson.toString)
         } yield cdataWithVote
       } else
         getStateFromRedis(key)
@@ -118,7 +114,7 @@ object Covid {
                 countyCityKey <- Concurrent[F].delay(s"$state-$city".toLowerCase)
                 vote <- Concurrent[F].delay(if (countyElectMap.containsKey(countyCityKey)) countyElectMap.get(countyCityKey).toString else "")
                 cdataWithVote <- Concurrent[F].delay(cdata.copy(vote = vote))
-                _ <- setRedisKey(key, cdataWithVote.toString)
+                _ <- setRedisKey(key, cdataWithVote.asJson.toString)
               } yield cdataWithVote
             } else
               getCityFromRedis(key)
@@ -137,7 +133,7 @@ object Covid {
             acc.copy(state = s"${acc.state},${elem.state}", vote = s"${acc.vote},${elem.vote}",
               positive = acc.positive + elem.positive, death = acc.death + elem.death)
           })
-          _ <- setRedisKey(key, stateTotals.toString)
+          _ <- setRedisKey(key, stateTotals.asJson.toString)
         } yield stateTotals
       } else
         getStateFromRedis(key)
@@ -154,7 +150,7 @@ object Covid {
               vote = s"${acc.vote},${elem.vote}",
               confirmed = acc.confirmed + elem.confirmed, deaths = acc.deaths + elem.deaths)
           })
-          _ <- setRedisKey(key, cityTotals.toString)
+          _ <- setRedisKey(key, cityTotals.asJson.toString)
         } yield cityTotals
       } else
         getCityFromRedis(key)

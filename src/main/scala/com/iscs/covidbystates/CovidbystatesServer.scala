@@ -4,8 +4,8 @@ import java.util.concurrent.ConcurrentHashMap
 
 import cats.effect.{Blocker, Concurrent, ConcurrentEffect, ContextShift, Sync, Timer}
 import cats.implicits._
-import com.iscs.covidbystates.domains.{Census, Covid, Groupings}
-import com.iscs.covidbystates.elect.{Political, Blue, Red}
+import com.iscs.covidbystates.domains.{Census, Covid, CovidHistory, Groupings}
+import com.iscs.covidbystates.elect.{Blue, Political, Red}
 import com.iscs.covidbystates.routes.CovidbystatesRoutes
 import com.iscs.covidbystates.util.ResourceProcessor
 import fs2.Stream
@@ -47,7 +47,7 @@ object CovidbystatesServer {
 
   def stream[F[_]: ConcurrentEffect](stateCSV: String, countyCSV: String, electoralCSV: String, winnerCSV: String)
                                     (implicit cmd: RedisCommands[F, String, String],
-                                    T: Timer[F], C: ContextShift[F]): Stream[F, Nothing] = Stream.resource(Blocker[F]).flatMap { blocker =>
+                                    T: Timer[F], Con: ContextShift[F]): Stream[F, Nothing] = Stream.resource(Blocker[F]).flatMap { blocker =>
 
     val csvStream = for {
       _ <- Stream.eval(Concurrent[F].delay(L.info("\"got resource file\" contents={} lines", stateCSV.length)))
@@ -126,6 +126,7 @@ object CovidbystatesServer {
       censusAlg = Census.impl[F](client, stateCodeMap)
       groupingsAlg = Groupings.impl[F](stateCountyMap)
       covidAlg = Covid.impl[F](client, stateNameMap, countyBlueRedMap, electoralBlueRedMap)
+      covidHxAlg = CovidHistory.impl[F](client, stateNameMap, countyBlueRedMap, electoralBlueRedMap)
 
       // Combine Service Routes into an HttpApp.
       // Can also be done via a Router if you
@@ -137,7 +138,8 @@ object CovidbystatesServer {
           CovidbystatesRoutes.censusRoutes[F](censusAlg) <+>
           CovidbystatesRoutes.covidStateRoutes[F](covidAlg) <+>
           CovidbystatesRoutes.covidCityRoutes[F](covidAlg) <+>
-          CovidbystatesRoutes.groupingsRoutes[F](groupingsAlg)
+          CovidbystatesRoutes.groupingsRoutes[F](groupingsAlg) <+>
+          CovidbystatesRoutes.covidHistoryRoutes[F](covidHxAlg)
       ).orNotFound
 
       // With Middlewares in place

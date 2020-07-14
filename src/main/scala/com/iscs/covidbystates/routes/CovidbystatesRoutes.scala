@@ -2,22 +2,44 @@ package com.iscs.covidbystates.routes
 
 import cats.effect.Sync
 import cats.implicits._
-import com.iscs.covidbystates.domains.{Census, Covid, Groupings}
+import com.iscs.covidbystates.domains.{Census, Covid, CovidHistory, Groupings}
 import com.iscs.covidbystates.{HelloWorld, Jokes}
+import fs2.{Chunk, Stream}
 import io.circe.Encoder
 import io.circe.generic.semiauto._
-import org.http4s.{EntityEncoder, HttpRoutes}
-import org.http4s.dsl.Http4sDsl
+import org.http4s._
 import org.http4s.circe._
+import org.http4s.dsl.Http4sDsl
 
 object CovidbystatesRoutes {
   implicit val llSEncoder: Encoder[List[List[String]]] = deriveEncoder[List[List[String]]]
   implicit def llSEntityEncoder[F[_]: Sync]: EntityEncoder[F, List[List[String]]] =
     jsonEncoderOf
 
+    def routes[F[_]: Sync]: HttpRoutes[F] = {
+      val dsl = new Http4sDsl[F]{}
+      import dsl._
+
+      val length = 1024L * 8 * 8 * 1000 * 5
+
+      val sss1 = Chunk.bytes("hello".getBytes)
+      val sss = Stream.chunk(sss1)
+        .repeat
+        .take(length)
+        .covary[F]
+      HttpRoutes.of[F] {
+        case GET -> Root / "test-server" =>
+          for {
+            resp <- Ok(sss, Header("Content-Length", length.toString))
+          } yield resp
+      }
+    }
+
   def covidStateRoutes[F[_]: Sync](C: Covid[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F]{}
     import dsl._
+    import com.iscs.covidbystates.domains.CovidHistory.State._
+
     HttpRoutes.of[F] {
       case GET -> Root / "covidState" / state / date =>
         for {
@@ -32,6 +54,22 @@ object CovidbystatesRoutes {
       case GET -> Root / "covidCounties" / state / counties =>
         for {
           grid <- C.getByCities(state, counties.split(",").toList)
+          resp <- Ok(grid)
+        } yield resp
+    }
+  }
+
+  def covidHistoryRoutes[F[_]: Sync](C: CovidHistory[F]): HttpRoutes[F] = {
+    val dsl = new Http4sDsl[F]{}
+    import dsl._
+    HttpRoutes.of[F] {
+      case GET -> Root / "covidStateHistory" / state =>
+        for {
+          resp <- Ok(C.getHistoryByState(state.toLowerCase))
+        } yield resp
+      case GET -> Root / "covidUSHistory"  =>
+        for {
+          grid <- C.getUSHistory
           resp <- Ok(grid)
         } yield resp
     }
