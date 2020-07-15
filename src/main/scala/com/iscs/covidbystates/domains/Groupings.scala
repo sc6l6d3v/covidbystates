@@ -8,6 +8,7 @@ import dev.profunktor.redis4cats.RedisCommands
 import io.circe._
 import io.circe.generic.semiauto._
 import io.circe.parser._
+import io.circe.syntax._
 import org.http4s.circe._
 import org.http4s.{EntityDecoder, EntityEncoder}
 
@@ -60,7 +61,7 @@ object Groupings {
           else
             List.empty[String])
           county <- Concurrent[F].delay(County(state, countyMap))
-          _ <- setRedisKey(key, county.toString)
+          _ <- setRedisKey(key, county.asJson.noSpaces)
         } yield county
       } else
         getCountyFromRedis(key)
@@ -77,7 +78,7 @@ object Groupings {
             else
               List.empty[String]
           ))
-          _ <- setRedisKey(key, state.toString)
+          _ <- setRedisKey(key, state.asJson.noSpaces)
         } yield state
       } else
         getGrpStateFromRedis(key)

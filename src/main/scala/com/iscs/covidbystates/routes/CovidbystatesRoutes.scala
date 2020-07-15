@@ -65,7 +65,7 @@ object CovidbystatesRoutes {
     HttpRoutes.of[F] {
       case GET -> Root / "covidStateHistory" / state =>
         for {
-          resp <- Ok(C.getHistoryByState(state.toLowerCase))
+          resp <- Ok(C.getHistoryByStates(state.toLowerCase))
         } yield resp
       case GET -> Root / "covidUSHistory"  =>
         for {

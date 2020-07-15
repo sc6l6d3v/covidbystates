@@ -3,7 +3,7 @@ package com.iscs.covidbystates.domains
 
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.{ConcurrentHashMap, Executors}
 
 import cats.effect.{Blocker, Concurrent, ConcurrentEffect, ContextShift, Sync}
 import cats.implicits._
@@ -24,8 +24,7 @@ import org.http4s.client.dsl.Http4sClientDsl
 import org.http4s.{EntityDecoder, EntityEncoder, _}
 
 trait CovidHistory[F[_]] extends Cache[F] {
-  def getHistoryByState(state: String): Stream[F, CovidHistory.State]
-  def getHistoryByState2(state: String): Stream[F, List[CovidHistory.State]]
+  def getHistoryByStates(state: String): Stream[F, CovidHistory.States]
   def getUSHistory: F[CovidHistory.Country]
 }
 
@@ -34,12 +33,9 @@ object CovidHistory {
 
   def apply[F[_]](implicit ev: CovidHistory[F]): CovidHistory[F] = ev
 
-  final case class State(state: String, vote: String = "", positive: Int, death: Int, date: ZonedDateTime) {
-    //override def toString: String = s"$this"
-  }
-  final case class Country(name: String, vote: String = "", confirmed: Int, deaths: Int) {
-    //override def toString: String =  s"$this"
-  }
+  final case class State(state: String, vote: String = "", positive: Int, death: Int, date: ZonedDateTime)
+  final case class States(seq: List[State])
+  final case class Country(name: String, vote: String = "", confirmed: Int, deaths: Int)
 
   object State {
     implicit val stateDecoder: Decoder[State] = (c: HCursor) => {
@@ -56,9 +52,19 @@ object CovidHistory {
     implicit val stateEncoder: Encoder[State] = deriveEncoder[State]
     implicit def stateEntityEncoder[F[_]: Sync]: EntityEncoder[F, State] = jsonEncoderOf
 
-    implicit def statesEntityDecoder[F[_]: Sync]: EntityDecoder[F, List[State]] = jsonOf
-
     def empty: State = State("", "", 0, 0, ZonedDateTime.now)
+  }
+
+  object States {
+    implicit val statesDecoder: Decoder[States] = (c: HCursor) => {
+      val seq= c.downField("seq").as[List[State]].getOrElse(List.empty[State])
+      Right(States(seq))
+    }
+    implicit def statesEntityDecoder[F[_]: Sync]: EntityDecoder[F, List[State]] = jsonOf
+    implicit val statesEncoder: Encoder[States] = deriveEncoder[States]
+    implicit def statesEntityEncoder[F[_]: Sync]: EntityEncoder[F, States] = jsonEncoderOf
+
+    def empty: States = States(List.empty[State])
   }
 
   object Country {
@@ -86,6 +92,8 @@ object CovidHistory {
 
   def fromState(state: String): State = parse(state).getOrElse(Json.Null).as[State].getOrElse(State.empty)
 
+  def fromStates(states: String): States = parse(states).getOrElse(Json.Null).as[States].getOrElse(States.empty)
+
   def impl[F[_]: ConcurrentEffect: Sync](C: Client[F], nameMap: ConcurrentHashMap[String, String],
                                    countyElectMap: ConcurrentHashMap[String, Political],
                                    electMap: ConcurrentHashMap[String, Political])
@@ -93,40 +101,32 @@ object CovidHistory {
     val dsl: Http4sClientDsl[F] = new Http4sClientDsl[F] {}
     import dsl._
 
-    override def getHistoryByState(state: String): Stream[F, State] = for {
-      key <- Stream.eval(Concurrent[F].delay(s"covStateHx:$state"))
-      hasKey <- Stream.eval(cmd.exists(key))
+    def getHistoryByState(state: String): Stream[F, State] = for {
       stateUri <- Stream.eval(Concurrent[F].delay(Uri.unsafeFromString(CovidStateHistoryApiUri.builder(CovidStateHistoryApiUri(state)))))
-      resp <- if (!hasKey) {
-        for {
-          req <- Stream.eval(GET(stateUri).adaptError { case t => DataError(t) })
-          hxStream = new StateHistoryStream(req, C)
-          cdata <- hxStream.stream(Blocker.liftExecutionContext(scala.concurrent.ExecutionContext.global))
-          vote <- Stream.eval(Concurrent[F].delay(if (electMap.containsKey(state)) electMap.get(state).toString else ""))
-          cdataWithVote <- Stream.eval(Concurrent[F].delay(cdata.copy(vote = vote)))
-          _ <- Stream.eval(setRedisKey(key, cdataWithVote.asJson.toString))
-        } yield cdataWithVote
-      } else
-        Stream.eval(getStateHxFromRedis(key))
-    } yield resp
+      req <- Stream.eval(GET(stateUri).adaptError { case t => DataError(t) })
+      hxStream = new StateHistoryStream(req, C)
+      cdata <- hxStream.stream(Blocker.liftExecutorService(Executors.newFixedThreadPool(4)))
+      vote <- Stream.eval(Concurrent[F].delay(if (electMap.containsKey(state)) electMap.get(state).toString else ""))
+      cdataWithVote <- Stream.eval(Concurrent[F].delay(cdata.copy(vote = vote)))
+    } yield cdataWithVote
 
     override def getUSHistory: F[Country] = for {
-      key <- Concurrent[F].delay(s"covUSHx")
-      hasKey <- cmd.exists(key)
       stateUri <- Concurrent[F].delay(Uri.unsafeFromString(CovidUSHistoryApiUri.toString()))
+      cdata <- C.expect[Country](GET(stateUri)).adaptError { case t => DataError(t) }
+      vote <- Concurrent[F].delay("")
+      cdataWithVote <- Concurrent[F].delay(cdata.copy(vote = vote))
+    } yield cdataWithVote
+
+    override def getHistoryByStates(state: String): Stream[F,States] = for {
+      key <- Stream.eval(Concurrent[F].delay(s"covStateHx:$state"))
+      hasKey <- Stream.eval(cmd.exists(key))
       resp <- if (!hasKey) {
         for {
-          cdata <- C.expect[Country](GET(stateUri)).adaptError { case t => DataError(t) }
-          vote <- Concurrent[F].delay("")
-          cdataWithVote <- Concurrent[F].delay(cdata.copy(vote = vote))
-          _ <- setRedisKey(key, cdataWithVote.toString)
-        } yield cdataWithVote
+          statesSeq <- getHistoryByState(state).chunkN(20).map(_.toList)
+          _ <- Stream.eval(setRedisKey(key, States(statesSeq).asJson.noSpaces))
+        } yield States(statesSeq)
       } else
-        getUSHxFromRedis(key)
+        Stream.eval(getStatesHxFromRedis(key))
     } yield resp
-
-    override def getHistoryByState2(state: String): Stream[F,List[State]] = for {
-      statesSeq <- getHistoryByState(state).chunkN(20).map(_.toList)
-    } yield statesSeq
   }
 }

@@ -3,7 +3,8 @@ package com.iscs.covidbystates.domains
 import cats.effect.{Concurrent, Sync}
 import cats.implicits._
 import com.iscs.covidbystates.domains.Covid.{City, State, fromCity, fromState}
-import com.iscs.covidbystates.domains.CovidHistory.{Country, State => StateHx, fromCountry, fromState => fromStateHx}
+import com.iscs.covidbystates.domains.CovidHistory.{Country, State => StateHx, States, fromCountry,
+  fromState => fromStateHx, fromStates}
 import com.iscs.covidbystates.domains.Census.{Data, fromString}
 import com.iscs.covidbystates.domains.Groupings.{fromCounty, County, fromState => fromGrpState, State => GrpState}
 import com.typesafe.scalalogging.Logger
@@ -34,6 +35,14 @@ trait Cache[F[_]] {
       L.info("\"retrieved key\" key={} value={}", key, memVal)
       fromStateHx(memVal)
     }.getOrElse(StateHx.empty))
+  } yield retrieved
+
+  def getStatesHxFromRedis[F[_]: Concurrent: Sync](key: String)(implicit cmd: RedisCommands[F, String, String]): F[States] = for {
+    memValOpt <- cmd.get(key)
+    retrieved <- Concurrent[F].delay(memValOpt.map{ memVal =>
+      L.info("\"retrieved key\" key={} value={}", key, memVal)
+      fromStates(memVal)
+    }.getOrElse(States.empty))
   } yield retrieved
 
   def getUSHxFromRedis[F[_]: Concurrent: Sync](key: String)(implicit cmd: RedisCommands[F, String, String]): F[Country] = for {
