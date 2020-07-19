@@ -1,11 +1,12 @@
 package com.iscs.covidbystates.domains
 
 
-import java.time.ZonedDateTime
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.{ConcurrentHashMap, Executors}
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
 
-import cats.effect.{Blocker, Concurrent, ConcurrentEffect, ContextShift, Sync}
+import cats.effect.{Concurrent, ConcurrentEffect, ContextShift, Sync}
 import cats.implicits._
 import com.iscs.covidbystates.covid.{CovidStateHistoryApiUri, CovidUSHistoryApiUri}
 import com.iscs.covidbystates.csv.StateHistoryStream
@@ -23,6 +24,8 @@ import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
 import org.http4s.{EntityDecoder, EntityEncoder, _}
 
+import scala.util.Try
+
 trait CovidHistory[F[_]] extends Cache[F] {
   def getHistoryByStates(state: String): Stream[F, CovidHistory.States]
   def getUSHistory: F[CovidHistory.Country]
@@ -33,7 +36,7 @@ object CovidHistory {
 
   def apply[F[_]](implicit ev: CovidHistory[F]): CovidHistory[F] = ev
 
-  final case class State(state: String, vote: String = "", positive: Int, death: Int, date: ZonedDateTime)
+  final case class State(state: String, vote: String = "", positive: Int, death: Int, date: LocalDate)
   final case class States(seq: List[State])
   final case class Country(name: String, vote: String = "", confirmed: Int, deaths: Int)
 
@@ -43,8 +46,11 @@ object CovidHistory {
       val positive = c.downField("positive").as[Int].getOrElse(0)
       val death = c.downField("death").as[Int].getOrElse(0)
       val dateStr = c.downField("date").as[String].getOrElse("")
-      val formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME
-      val date = ZonedDateTime.parse(dateStr, formatter)
+      val formatter = DateTimeFormatter.BASIC_ISO_DATE
+      val date = Try(LocalDate.parse(dateStr, formatter)).toOption.getOrElse{
+        L.error(""""Date not parsed" date={}""", dateStr)
+        LocalDate.now
+      }
       Right(State(state, positive = positive, death = death, date = date))
     }
 
@@ -52,7 +58,7 @@ object CovidHistory {
     implicit val stateEncoder: Encoder[State] = deriveEncoder[State]
     implicit def stateEntityEncoder[F[_]: Sync]: EntityEncoder[F, State] = jsonEncoderOf
 
-    def empty: State = State("", "", 0, 0, ZonedDateTime.now)
+    def empty: State = State("", "", 0, 0, LocalDate.now)
   }
 
   object States {
@@ -105,7 +111,7 @@ object CovidHistory {
       stateUri <- Stream.eval(Concurrent[F].delay(Uri.unsafeFromString(CovidStateHistoryApiUri.builder(CovidStateHistoryApiUri(state)))))
       req <- Stream.eval(GET(stateUri).adaptError { case t => DataError(t) })
       hxStream = new StateHistoryStream(req, C)
-      cdata <- hxStream.stream(Blocker.liftExecutorService(Executors.newFixedThreadPool(4)))
+      cdata <- hxStream.stream
       vote <- Stream.eval(Concurrent[F].delay(if (electMap.containsKey(state)) electMap.get(state).toString else ""))
       cdataWithVote <- Stream.eval(Concurrent[F].delay(cdata.copy(vote = vote)))
     } yield cdataWithVote
@@ -122,7 +128,7 @@ object CovidHistory {
       hasKey <- Stream.eval(cmd.exists(key))
       resp <- if (!hasKey) {
         for {
-          statesSeq <- getHistoryByState(state).chunkN(20).map(_.toList)
+          statesSeq <- Stream.eval(getHistoryByState(state).compile.toList)
           _ <- Stream.eval(setRedisKey(key, States(statesSeq).asJson.noSpaces))
         } yield States(statesSeq)
       } else

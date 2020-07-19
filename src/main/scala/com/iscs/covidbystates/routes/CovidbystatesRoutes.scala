@@ -1,7 +1,8 @@
 package com.iscs.covidbystates.routes
 
-import cats.effect.Sync
+import cats.effect.{Concurrent, Sync}
 import cats.implicits._
+import com.typesafe.scalalogging.Logger
 import com.iscs.covidbystates.domains.{Census, Covid, CovidHistory, Groupings}
 import com.iscs.covidbystates.{HelloWorld, Jokes}
 import fs2.{Chunk, Stream}
@@ -12,6 +13,8 @@ import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
 
 object CovidbystatesRoutes {
+  private val L = Logger[this.type]
+
   implicit val llSEncoder: Encoder[List[List[String]]] = deriveEncoder[List[List[String]]]
   implicit def llSEntityEncoder[F[_]: Sync]: EntityEncoder[F, List[List[String]]] =
     jsonEncoderOf
@@ -38,8 +41,6 @@ object CovidbystatesRoutes {
   def covidStateRoutes[F[_]: Sync](C: Covid[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F]{}
     import dsl._
-    import com.iscs.covidbystates.domains.CovidHistory.State._
-
     HttpRoutes.of[F] {
       case GET -> Root / "covidState" / state / date =>
         for {
@@ -59,7 +60,7 @@ object CovidbystatesRoutes {
     }
   }
 
-  def covidHistoryRoutes[F[_]: Sync](C: CovidHistory[F]): HttpRoutes[F] = {
+  def covidHistoryRoutes[F[_]: Sync: Concurrent](C: CovidHistory[F]): HttpRoutes[F] = {
     val dsl = new Http4sDsl[F]{}
     import dsl._
     HttpRoutes.of[F] {
