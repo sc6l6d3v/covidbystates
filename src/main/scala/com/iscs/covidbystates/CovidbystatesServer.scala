@@ -121,8 +121,6 @@ object CovidbystatesServer {
 
     val srvStream = for {
       client <- BlazeClientBuilder[F](global).stream
-      helloWorldAlg = HelloWorld.impl[F]
-      jokeAlg = Jokes.impl[F](client)
       censusAlg = Census.impl[F](client, stateCodeMap)
       groupingsAlg = Groupings.impl[F](stateCountyMap)
       covidAlg = Covid.impl[F](client, stateNameMap, countyBlueRedMap, electoralBlueRedMap)
@@ -133,9 +131,7 @@ object CovidbystatesServer {
       // want to extract a segments not checked
       // in the underlying routes.
       httpApp = (
-        CovidbystatesRoutes.helloWorldRoutes[F](helloWorldAlg) <+>
-          CovidbystatesRoutes.jokeRoutes[F](jokeAlg) <+>
-          CovidbystatesRoutes.censusRoutes[F](censusAlg) <+>
+        CovidbystatesRoutes.censusRoutes[F](censusAlg) <+>
           CovidbystatesRoutes.covidStateRoutes[F](covidAlg) <+>
           CovidbystatesRoutes.covidCityRoutes[F](covidAlg) <+>
           CovidbystatesRoutes.groupingsRoutes[F](groupingsAlg) <+>
