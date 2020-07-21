@@ -46,7 +46,7 @@ object CovidHistory {
       val positive = c.downField("positive").as[Int].getOrElse(0)
       val death = c.downField("death").as[Int].getOrElse(0)
       val dateStr = c.downField("date").as[String].getOrElse("")
-      val formatter = DateTimeFormatter.BASIC_ISO_DATE
+      val formatter = DateTimeFormatter.ISO_DATE
       val date = Try(LocalDate.parse(dateStr, formatter)).toOption.getOrElse{
         L.error(""""Date not parsed" date={}""", dateStr)
         LocalDate.now

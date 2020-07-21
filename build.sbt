@@ -7,6 +7,8 @@ val fs2Version = "2.2.2"
 val loggingVersion = "3.9.2"
 val redis4catsVersion = "0.10.0"
 val upickleVersion = "0.9.5"
+val fs2MongoVersion = "0.5.0"
+val mongoScalaVersion = "4.0.5"
 
 lazy val root = (project in file("."))
   .settings(
@@ -25,6 +27,7 @@ lazy val root = (project in file("."))
       "dev.profunktor"   %% "redis4cats-streams"  % redis4catsVersion,
       "dev.profunktor"   %% "redis4cats-effects"  % redis4catsVersion,
       "dev.profunktor"   %% "redis4cats-log4cats" % redis4catsVersion,
+      "org.mongodb.scala" %% "mongo-scala-driver" % mongoScalaVersion,
       "org.specs2"       %% "specs2-core"         % Specs2Version % "test",
       "ch.qos.logback"   %  "logback-classic"     % LogbackVersion,
       "com.github.cb372" %% "cats-retry"          % catsRetryVersion,
