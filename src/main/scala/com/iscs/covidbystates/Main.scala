@@ -2,6 +2,7 @@ package com.iscs.covidbystates
 
 import cats.effect.{Blocker, Concurrent, ExitCode, IO, IOApp, Resource}
 import cats.implicits._
+import com.iscs.covidbystates.config.RedisConfig
 import com.iscs.covidbystates.util.Mongo
 import dev.profunktor.redis4cats.{Redis, RedisCommands}
 import dev.profunktor.redis4cats.effect.Log.Stdout._
@@ -9,7 +10,6 @@ import fs2.Stream
 import com.typesafe.scalalogging.Logger
 import dev.profunktor.redis4cats.connection.{RedisClient, RedisURI}
 import dev.profunktor.redis4cats.data.RedisCodec
-import org.http4s.Uri
 
 object Main extends IOApp {
   private val L = Logger[this.type]
@@ -17,29 +17,25 @@ object Main extends IOApp {
   private val covidCSV = "covid-raw-2020-05-23.csv"
   private val electoralCSV = "electoral.csv"
   private val winnerCSV = "winner.csv"
-  private val redisHost = sys.env.getOrElse("REDISHOST", "localhost")
-  private val pwd = Uri.encode(sys.env.getOrElse("REDISKEY", "NOREDISKEY")).replace("@", "%40")
-  private val mongoUri = sys.env.getOrElse("MONGOURI", "mongodb://localhost:27017")
 
   def run(args: List[String]): IO[ExitCode] = for {
     start <- IO.delay(System.currentTimeMillis)
     resources = for {
       redis <- for {
-          uri <- Resource.liftF {
-            L.info("\"starting Redis\" host={}", redisHost)
-            RedisURI.make[IO](s"redis://$pwd@$redisHost")
-          }
-          cli <- RedisClient[IO](uri)
-          cmd <- Redis[IO].fromClient(cli, RedisCodec.Utf8)
-        } yield cmd
-      mongo <- Mongo.fromUrl[IO](mongoUri)
+        uri <- RedisConfig().uri
+        cli <- RedisClient[IO](uri)
+        cmd <- Redis[IO].fromClient(cli, RedisCodec.Utf8)
+      } yield cmd
+      mongo <- Mongo.fromUrl[IO]()
     } yield (redis, mongo)
 
-    ec <- resources.use { case (cmd, mongo) =>
+    ec <- resources.use { case (cmd, conn) =>
       implicit val redisCmd: RedisCommands[IO, String, String] = cmd
       for {
         start <- IO.delay(System.currentTimeMillis)
-
+        _ <- IO.delay(L.info("found conn={}", conn))
+        db = conn.getDatabase("elections-2016")
+        coll = db.getCollection("covid-state")
         serverStream = for {
           resCSV <- Stream.eval(Blocker[IO].use { blocker =>
             CovidbystatesServer.getResource[IO](fipsCSV, blocker)

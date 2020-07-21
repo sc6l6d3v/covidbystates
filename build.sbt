@@ -46,8 +46,8 @@ scalacOptions ++= Seq(
   "-encoding", "UTF-8",
   "-language:higherKinds",
   "-language:postfixOps",
-  "-feature",
-  "-Xfatal-warnings",
+  "-feature"
+  //"-Xfatal-warnings",
 )
 
 assemblyMergeStrategy in assembly := {
