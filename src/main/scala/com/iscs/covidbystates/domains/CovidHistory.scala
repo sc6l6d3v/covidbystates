@@ -175,7 +175,7 @@ object CovidHistory {
     }
 
     override def getHistoryByStates(state: String, from: LocalDate, to: LocalDate): Stream[F, Json] = for {
-        key <- Stream.eval(Concurrent[F].delay(s"covStateHx:$state"))
+        key <- Stream.eval(Concurrent[F].delay(s"covStateHx:$state:$from:$to"))
         hasKey <- Stream.eval(cmd.exists(key))
         resp <- if (!hasKey) {
           for {

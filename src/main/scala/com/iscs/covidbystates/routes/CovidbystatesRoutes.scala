@@ -46,6 +46,12 @@ object CovidbystatesRoutes {
     val dsl = new Http4sDsl[F]{}
     import dsl._
     HttpRoutes.of[F] {
+      case GET -> Root / "covidStateHistory" / state / from / to =>
+        for {
+          fromDate <- Concurrent[F].delay(Try(LocalDate.parse(from)).toOption.getOrElse(LocalDate.now))
+          toDate <- Concurrent[F].delay(Try(LocalDate.parse(to)).toOption.getOrElse(LocalDate.now))
+          resp <- Ok(C.getHistoryByStates(state.toLowerCase, fromDate, toDate))
+        } yield resp
       case GET -> Root / "covidStateHistory" / state / from =>
         for {
           fromDate <- Concurrent[F].delay(Try(LocalDate.parse(from)).toOption.getOrElse(LocalDate.now))
