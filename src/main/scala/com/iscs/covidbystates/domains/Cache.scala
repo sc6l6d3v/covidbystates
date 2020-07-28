@@ -3,12 +3,13 @@ package com.iscs.covidbystates.domains
 import cats.effect.{Concurrent, Sync}
 import cats.implicits._
 import com.iscs.covidbystates.domains.Covid.{City, State, fromCity, fromState}
-import com.iscs.covidbystates.domains.CovidHistory.{Country, State => StateHx, States, fromCountry,
-  fromState => fromStateHx, fromStates}
+import com.iscs.covidbystates.domains.CovidHistory.{Country, States, fromCountry, fromStates, State => StateHx, fromState => fromStateHx}
 import com.iscs.covidbystates.domains.Census.{Data, fromString}
-import com.iscs.covidbystates.domains.Groupings.{fromCounty, County, fromState => fromGrpState, State => GrpState}
+import com.iscs.covidbystates.domains.Groupings.{County, fromCounty, State => GrpState, fromState => fromGrpState}
 import com.typesafe.scalalogging.Logger
 import dev.profunktor.redis4cats.RedisCommands
+import io.circe.Json
+import io.circe.parser._
 
 trait Cache[F[_]] {
   private val L = Logger[this.type]
@@ -43,6 +44,19 @@ trait Cache[F[_]] {
       L.info("\"retrieved key\" key={} value={}", key, memVal)
       fromStates(memVal)
     }.getOrElse(States.empty))
+  } yield retrieved
+
+  def getStatesHxJsonFromRedis[F[_]: Concurrent: Sync](key: String)(implicit cmd: RedisCommands[F, String, String]): F[Json] = for {
+    memValOpt <- cmd.get(key)
+    retrieved <- Concurrent[F].delay(memValOpt.map{ memVal =>
+      L.info("\"retrieved key\" key={} value={}", key, memVal)
+      parse(memVal) match {
+        case Right(validJson) => validJson
+        case Left(failure) =>
+          L.error(""""bad json" json={}""", memVal)
+          Json.Null
+      }
+    }.getOrElse(Json.Null))
   } yield retrieved
 
   def getUSHxFromRedis[F[_]: Concurrent: Sync](key: String)(implicit cmd: RedisCommands[F, String, String]): F[Country] = for {

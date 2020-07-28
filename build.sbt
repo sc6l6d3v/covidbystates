@@ -24,6 +24,7 @@ lazy val root = (project in file("."))
       "org.http4s"       %% "http4s-async-http-client" % Http4sVersion,
       "io.circe"         %% "circe-generic"       % CirceVersion,
       "io.circe"         %% "circe-parser"        % CirceVersion,
+      "io.circe"         %% "circe-optics"        % CirceVersion,
       "dev.profunktor"   %% "redis4cats-streams"  % redis4catsVersion,
       "dev.profunktor"   %% "redis4cats-effects"  % redis4catsVersion,
       "dev.profunktor"   %% "redis4cats-log4cats" % redis4catsVersion,

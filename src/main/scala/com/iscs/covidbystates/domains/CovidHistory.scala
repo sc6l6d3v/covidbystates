@@ -13,23 +13,26 @@ import com.iscs.covidbystates.elect.Political
 import com.iscs.covidbystates.util.DbClient
 import com.typesafe.scalalogging.Logger
 import dev.profunktor.redis4cats.RedisCommands
-import fs2.Stream
+import fs2.{Pipe, Stream}
 import io.circe._
 import io.circe.generic.semiauto._
 import io.circe.parser._
 import io.circe.syntax._
+import io.circe.optics.JsonPath.root
 import org.http4s.Method._
 import org.http4s.circe._
 import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
 import org.http4s.{EntityDecoder, EntityEncoder, _}
+import org.mongodb.scala.model.Filters.{and, gte, lte, eq => mdbeq}
 import org.mongodb.scala.Document
+import org.mongodb.scala.bson.BsonNumber
 
 import scala.util.Try
 
 trait CovidHistory[F[_]] extends Cache[F] {
   def getHistoryByStates(state: String): Stream[F, CovidHistory.States]
-  def getHistoryByStates(state: String, from: LocalDate, to: LocalDate): Stream[F, CovidHistory.States]
+  def getHistoryByStates(state: String, from: LocalDate, to: LocalDate): Stream[F, Json]
   def getUSHistory: F[CovidHistory.Country]
 }
 
@@ -140,7 +143,57 @@ object CovidHistory {
         Stream.eval(getStatesHxFromRedis(key))
     } yield resp
 
-    override def getHistoryByStates(state: String, from: LocalDate, to: LocalDate): Stream[F, States] =
-      getHistoryByStates(state)
+    private def localdate2yyyymmdd(ld: LocalDate) = ld.getYear * 10000 + ld.getMonth.getValue * 100 + ld.getDayOfMonth
+
+    private def docToJson[F[_]: ConcurrentEffect]: Pipe[F, Document, Json] = strDoc => {
+      for {
+        doc <- strDoc
+        json <- Stream.eval(Concurrent[F].delay(parse(doc.toJson) match {
+          case Right(validJson) => validJson
+          case Left(parseFailure) =>
+            L.error(""""Parsing failure" exception={} """, parseFailure.toString)
+            Json.Null
+        }))
+      } yield json
+    }
+
+    private def jsonToStateJson[F[_]: ConcurrentEffect](vote: String): Pipe[F, Json, Json] = strJson => {
+      for {
+        json <- strJson
+        state <- Stream.eval(Concurrent[F].delay(root.state.string.getOption(json).getOrElse("NOSTATE")))
+        positive <- Stream.eval(Concurrent[F].delay(root.positive.int.getOption(json).getOrElse(0)))
+        death <- Stream.eval(Concurrent[F].delay(root.death.int.getOption(json).getOrElse(0)))
+        date <- Stream.eval(Concurrent[F].delay(root.date.int.getOption(json).getOrElse(0)))
+        stateJson <- Stream.eval(Concurrent[F].delay(Json.fromFields(List(
+          ("state", Json.fromString(state)),
+          ("vote", Json.fromString(vote)),
+          ("positive", Json.fromInt(positive)),
+          ("death", Json.fromInt(death)),
+          ("date", Json.fromInt(date))
+        ))))
+      } yield stateJson
+    }
+
+    override def getHistoryByStates(state: String, from: LocalDate, to: LocalDate): Stream[F, Json] = for {
+        key <- Stream.eval(Concurrent[F].delay(s"covStateHx:$state"))
+        hasKey <- Stream.eval(cmd.exists(key))
+        resp <- if (!hasKey) {
+          for {
+            vote <- Stream.eval(Concurrent[F].delay(if (electMap.containsKey(state)) electMap.get(state).toString else ""))
+            dbResult <- Stream.eval(dbfx.find(
+              and(
+                gte("date", BsonNumber(localdate2yyyymmdd(from))),
+                lte("date", BsonNumber(localdate2yyyymmdd(to))),
+                mdbeq("state", state.toUpperCase))
+            )
+              .through(docToJson)
+              .through(jsonToStateJson(vote))
+              .compile
+              .toList)
+            _ <- Stream.eval(setRedisKey(key, dbResult.map(_.noSpaces).mkString("[",",","]")))
+          } yield Json.fromValues(dbResult)
+        } else
+          Stream.eval(getStatesHxJsonFromRedis(key))
+      } yield resp
   }
 }
