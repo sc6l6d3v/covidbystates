@@ -7,7 +7,7 @@ import cats.implicits._
 import com.iscs.covidbystates.domains.{Census, Covid, CovidHistory, Groupings}
 import com.iscs.covidbystates.elect.{Blue, Political, Red}
 import com.iscs.covidbystates.routes.CovidbystatesRoutes
-import com.iscs.covidbystates.util.ResourceProcessor
+import com.iscs.covidbystates.util.{DbClient, ResourceProcessor}
 import fs2.Stream
 import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.implicits._
@@ -45,9 +45,10 @@ object CovidbystatesServer {
   } yield csvLines
 
 
-  def stream[F[_]: ConcurrentEffect](stateCSV: String, countyCSV: String, electoralCSV: String, winnerCSV: String)
-                                    (implicit cmd: RedisCommands[F, String, String],
-                                    T: Timer[F], Con: ContextShift[F]): Stream[F, Nothing] = Stream.resource(Blocker[F]).flatMap { blocker =>
+  def stream[F[_]: ConcurrentEffect](stateCSV: String, countyCSV: String, electoralCSV: String, winnerCSV: String,
+                                     mongoClient: F[DbClient[F]])(implicit cmd: RedisCommands[F, String, String],
+                                                                  T: Timer[F], Con: ContextShift[F]): Stream[F, Nothing] =
+    Stream.resource(Blocker[F]).flatMap { blocker =>
 
     val csvStream = for {
       _ <- Stream.eval(Concurrent[F].delay(L.info("\"got resource file\" contents={} lines", stateCSV.length)))
@@ -121,10 +122,11 @@ object CovidbystatesServer {
 
     val srvStream = for {
       client <- BlazeClientBuilder[F](global).stream
+      mongo <- Stream.eval(mongoClient)
       censusAlg = Census.impl[F](client, stateCodeMap)
       groupingsAlg = Groupings.impl[F](stateCountyMap)
       covidAlg = Covid.impl[F](client, stateNameMap, countyBlueRedMap, electoralBlueRedMap)
-      covidHxAlg = CovidHistory.impl[F](client, stateNameMap, countyBlueRedMap, electoralBlueRedMap)
+      covidHxAlg = CovidHistory.impl[F](client, stateNameMap, countyBlueRedMap, electoralBlueRedMap, mongo)
 
       // Combine Service Routes into an HttpApp.
       // Can also be done via a Router if you

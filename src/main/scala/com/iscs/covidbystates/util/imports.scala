@@ -44,7 +44,7 @@ object imports {
     } yield row
 }
 
-class MongoCollectionEffect[F[_], A](val underlying: MongoCollection[A])(implicit c: ClassTag[A]) {
+class MongoCollectionEffect[A](val underlying: MongoCollection[A])(implicit c: ClassTag[A]) {
 
   import imports._
 

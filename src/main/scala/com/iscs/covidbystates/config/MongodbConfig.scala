@@ -12,25 +12,17 @@ case class MongodbConfig(url: String, isReadOnly: Boolean = false) {
 
   val isReplicaSet = connection.getRequiredReplicaSetName != null
 
-  val baseClient = MongoClientSettings.builder()
+  val baseSettings = MongoClientSettings.builder()
     .applyToConnectionPoolSettings(b => b.minSize(128).maxSize(256))
     .applyConnectionString(connection)
     .readPreference(ReadPreference.secondaryPreferred)
     .credential(credentials)
 
-  val client = if (useSSL)
-    baseClient
+  val settings = if (useSSL)
+    baseSettings
       .applyToSslSettings(b => b.enabled(useSSL))
       .build()
   else
-    baseClient
+    baseSettings
       .build()
-}
-
-object MongodbConfig {
-  def apply(): MongodbConfig = {
-    val mongoUrl = sys.env.getOrElse("MONGOHOST", "localhost")
-    val isReadOnly = sys.env.getOrElse("MONGORO", "false").toBoolean
-    MongodbConfig(mongoUrl, isReadOnly)
-  }
 }

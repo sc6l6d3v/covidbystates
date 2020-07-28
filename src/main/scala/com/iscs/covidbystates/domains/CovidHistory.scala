@@ -4,13 +4,13 @@ package com.iscs.covidbystates.domains
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicInteger
 
 import cats.effect.{Concurrent, ConcurrentEffect, ContextShift, Sync}
 import cats.implicits._
 import com.iscs.covidbystates.covid.{CovidStateHistoryApiUri, CovidUSHistoryApiUri}
 import com.iscs.covidbystates.csv.StateHistoryStream
 import com.iscs.covidbystates.elect.Political
+import com.iscs.covidbystates.util.DbClient
 import com.typesafe.scalalogging.Logger
 import dev.profunktor.redis4cats.RedisCommands
 import fs2.Stream
@@ -23,11 +23,13 @@ import org.http4s.circe._
 import org.http4s.client.Client
 import org.http4s.client.dsl.Http4sClientDsl
 import org.http4s.{EntityDecoder, EntityEncoder, _}
+import org.mongodb.scala.Document
 
 import scala.util.Try
 
 trait CovidHistory[F[_]] extends Cache[F] {
   def getHistoryByStates(state: String): Stream[F, CovidHistory.States]
+  def getHistoryByStates(state: String, from: LocalDate, to: LocalDate): Stream[F, CovidHistory.States]
   def getUSHistory: F[CovidHistory.Country]
 }
 
@@ -101,10 +103,12 @@ object CovidHistory {
   def fromStates(states: String): States = parse(states).getOrElse(Json.Null).as[States].getOrElse(States.empty)
 
   def impl[F[_]: ConcurrentEffect: Sync](C: Client[F], nameMap: ConcurrentHashMap[String, String],
-                                   countyElectMap: ConcurrentHashMap[String, Political],
-                                   electMap: ConcurrentHashMap[String, Political])
+                                         countyElectMap: ConcurrentHashMap[String, Political],
+                                         electMap: ConcurrentHashMap[String, Political],
+                                         dbClient: DbClient[F])
                                   (implicit cmd: RedisCommands[F, String, String], con: ContextShift[F]): CovidHistory[F] = new CovidHistory[F] {
     val dsl: Http4sClientDsl[F] = new Http4sClientDsl[F] {}
+    val dbfx = dbClient.fxMap("covid-state")
     import dsl._
 
     def getHistoryByState(state: String): Stream[F, State] = for {
@@ -126,6 +130,7 @@ object CovidHistory {
     override def getHistoryByStates(state: String): Stream[F,States] = for {
       key <- Stream.eval(Concurrent[F].delay(s"covStateHx:$state"))
       hasKey <- Stream.eval(cmd.exists(key))
+      dbResult <- Stream.eval(dbfx.findOne(Document("date" -> 20200718, "state" -> state.toUpperCase)))
       resp <- if (!hasKey) {
         for {
           statesSeq <- Stream.eval(getHistoryByState(state).compile.toList)
@@ -134,5 +139,8 @@ object CovidHistory {
       } else
         Stream.eval(getStatesHxFromRedis(key))
     } yield resp
+
+    override def getHistoryByStates(state: String, from: LocalDate, to: LocalDate): Stream[F, States] =
+      getHistoryByStates(state)
   }
 }

@@ -1,15 +1,17 @@
 package com.iscs.covidbystates.routes
 
+import java.time.LocalDate
+
 import cats.effect.{Concurrent, Sync}
 import cats.implicits._
-import com.typesafe.scalalogging.Logger
 import com.iscs.covidbystates.domains.{Census, Covid, CovidHistory, Groupings}
-import fs2.{Chunk, Stream}
+import com.typesafe.scalalogging.Logger
 import io.circe.Encoder
 import io.circe.generic.semiauto._
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
+import scala.util.Try
 
 object CovidbystatesRoutes {
   private val L = Logger[this.type]
@@ -47,6 +49,12 @@ object CovidbystatesRoutes {
       case GET -> Root / "covidStateHistory" / state =>
         for {
           resp <- Ok(C.getHistoryByStates(state.toLowerCase))
+        } yield resp
+      case GET -> Root / "covidStateHistory" / state / from =>
+        for {
+          fromDate <- Concurrent[F].delay(Try(LocalDate.parse(from)).toOption.getOrElse(LocalDate.now))
+          toDate <- Concurrent[F].delay(LocalDate.now)
+          resp <- Ok(C.getHistoryByStates(state.toLowerCase, fromDate, toDate))
         } yield resp
       case GET -> Root / "covidUSHistory"  =>
         for {

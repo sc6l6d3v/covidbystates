@@ -3,7 +3,7 @@ package com.iscs.covidbystates
 import cats.effect.{Blocker, Concurrent, ExitCode, IO, IOApp, Resource}
 import cats.implicits._
 import com.iscs.covidbystates.config.RedisConfig
-import com.iscs.covidbystates.util.Mongo
+import com.iscs.covidbystates.util.{DbClient, Mongo}
 import dev.profunktor.redis4cats.{Redis, RedisCommands}
 import dev.profunktor.redis4cats.effect.Log.Stdout._
 import fs2.Stream
@@ -26,16 +26,13 @@ object Main extends IOApp {
         cli <- RedisClient[IO](uri)
         cmd <- Redis[IO].fromClient(cli, RedisCodec.Utf8)
       } yield cmd
-      mongo <- Mongo.fromUrl[IO]()
-    } yield (redis, mongo)
+      mongoClient <- Resource.fromAutoCloseable(DbClient[IO](Mongo.fromUrl(), List("elections-2016", "covid-state")))
+    } yield (redis, IO.delay(mongoClient))
 
-    ec <- resources.use { case (cmd, conn) =>
+    ec <- resources.use { case (cmd, dbClient) =>
       implicit val redisCmd: RedisCommands[IO, String, String] = cmd
       for {
         start <- IO.delay(System.currentTimeMillis)
-        _ <- IO.delay(L.info("found conn={}", conn))
-        db = conn.getDatabase("elections-2016")
-        coll = db.getCollection("covid-state")
         serverStream = for {
           resCSV <- Stream.eval(Blocker[IO].use { blocker =>
             CovidbystatesServer.getResource[IO](fipsCSV, blocker)
@@ -61,7 +58,7 @@ object Main extends IOApp {
             L.error("\"could not read {}\" ex={}", winnerCSV, ex.toString)
             Stream.eval(Concurrent[IO].pure("STATE|STUSAB|STATE_NAME|STATENS\n12|FL|Florida|00294478"))
           }
-          str <- CovidbystatesServer.stream[IO](resCSV, countyCSV, electCSV, countyWinnerCSV)
+          str <- CovidbystatesServer.stream[IO](resCSV, countyCSV, electCSV, countyWinnerCSV, dbClient)
         } yield str
 
         s <- serverStream
