@@ -50,12 +50,16 @@ trait Cache[F[_]] {
     memValOpt <- cmd.get(key)
     retrieved <- Concurrent[F].delay(memValOpt.map{ memVal =>
       L.info("\"retrieved key\" key={} value={}", key, memVal)
-      parse(memVal) match {
-        case Right(validJson) => validJson
-        case Left(failure) =>
-          L.error(""""bad json" json={}""", memVal)
-          Json.Null
-      }
+      Json.fromValues(
+        memVal.split("\\|").map { str =>
+          parse(str) match {
+            case Right(validJson) =>
+              validJson //.asArray.getOrElse(Vector.empty[Json]).toList
+            case Left(failure) =>
+              L.error(""""bad json" json={}""", memVal)
+              Json.Null
+          }
+        })
     }.getOrElse(Json.Null))
   } yield retrieved
 

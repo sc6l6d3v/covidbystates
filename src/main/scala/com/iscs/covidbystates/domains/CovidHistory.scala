@@ -133,7 +133,6 @@ object CovidHistory {
     override def getHistoryByStates(state: String): Stream[F,States] = for {
       key <- Stream.eval(Concurrent[F].delay(s"covStateHx:$state"))
       hasKey <- Stream.eval(cmd.exists(key))
-      dbResult <- Stream.eval(dbfx.findOne(Document("date" -> 20200718, "state" -> state.toUpperCase)))
       resp <- if (!hasKey) {
         for {
           statesSeq <- Stream.eval(getHistoryByState(state).compile.toList)
@@ -175,25 +174,29 @@ object CovidHistory {
     }
 
     override def getHistoryByStates(state: String, from: LocalDate, to: LocalDate): Stream[F, Json] = for {
-        key <- Stream.eval(Concurrent[F].delay(s"covStateHx:$state:$from:$to"))
-        hasKey <- Stream.eval(cmd.exists(key))
-        resp <- if (!hasKey) {
-          for {
-            vote <- Stream.eval(Concurrent[F].delay(if (electMap.containsKey(state)) electMap.get(state).toString else ""))
-            dbResult <- Stream.eval(dbfx.find(
-              and(
-                gte("date", BsonNumber(localdate2yyyymmdd(from))),
-                lte("date", BsonNumber(localdate2yyyymmdd(to))),
-                mdbeq("state", state.toUpperCase))
-            )
-              .through(docToJson)
-              .through(jsonToStateJson(vote))
-              .compile
-              .toList)
-            _ <- Stream.eval(setRedisKey(key, dbResult.map(_.noSpaces).mkString("[",",","]")))
-          } yield Json.fromValues(dbResult)
-        } else
-          Stream.eval(getStatesHxJsonFromRedis(key))
-      } yield resp
+      key <- Stream.eval(Concurrent[F].delay(s"covStateHx:$state:$from:$to"))
+      hasKey <- Stream.eval(cmd.exists(key))
+      jsonList <- if (!hasKey) {
+        for {
+          vote <- Stream.eval(Concurrent[F].delay(if (electMap.containsKey(state)) electMap.get(state).toString else ""))
+          dbList <- Stream.eval(dbfx.find(
+            and(
+              gte("date", BsonNumber(localdate2yyyymmdd(from))),
+              lte("date", BsonNumber(localdate2yyyymmdd(to))),
+              mdbeq("state", state.toUpperCase))
+          )
+            .through(docToJson)
+            .through(jsonToStateJson(vote))
+            .compile
+            .toList)
+          _ <- Stream.eval(setRedisKey(key, dbList.map(_.noSpaces).mkString("|")))
+        } yield dbList
+      } else
+        for {
+          cachedJson <- Stream.eval(getStatesHxJsonFromRedis(key))
+          cacheList <- Stream.eval(Concurrent[F].delay(cachedJson.asArray.getOrElse(Vector.empty[Json]).toList))
+        } yield cacheList
+      json <- Stream.emits(jsonList)
+    } yield json
   }
 }

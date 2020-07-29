@@ -54,7 +54,8 @@ class MongoCollectionEffect[A](val underlying: MongoCollection[A])(implicit c: C
 
   def distinct[F[_]: ConcurrentEffect](key: String): Stream[F,A] = toStream(underlying.distinct(key))
 
-  def findOne[F[_]: ConcurrentEffect](filter: Bson): F[Option[A]] = toAsync(underlying.find(filter).limit(1).first())
+  def findOne[F[_]: ConcurrentEffect](filter: Bson): F[Option[A]] = toAsync(underlying.find(filter)
+    .limit(1).first())
 
   def find[F[_]: ConcurrentEffect](filter: Bson): Stream[F,A] =
     toStream(underlying.find(filter).batchSize(batchsize))
