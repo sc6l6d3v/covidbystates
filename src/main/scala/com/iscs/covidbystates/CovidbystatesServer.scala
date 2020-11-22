@@ -103,9 +103,9 @@ object CovidbystatesServer {
       parts <- Stream.eval(Concurrent[F].delay(lines.split(delim2).toList))
       _ <- Stream.eval(Concurrent[F].delay{
         if (parts(2) == "trump") {
-          countyBlueRedMap.put(s"${parts(0)}-${parts(1)}".toLowerCase, Red)
+          countyBlueRedMap.put(s"${parts.head}-${parts(1)}".toLowerCase, Red)
         } else {
-          countyBlueRedMap.put(s"${parts(0)}-${parts(1)}".toLowerCase, Blue)
+          countyBlueRedMap.put(s"${parts.head}-${parts(1)}".toLowerCase, Blue)
         }
       })
     } yield ()
