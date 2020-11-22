@@ -21,7 +21,7 @@ The aforementioned command will build the image and tag it with the latest commi
 To run said image:
 
 ```
-docker run --env MONGOURI=$MONGOURI -env MONGORO=false -d -p 8080:8080 covid:rest
+docker run --env MONGOURI=$MONGOURI --env MONGORO=false -d -p 8080:8080 covid:rest
 ```
 
 To attach to said image via shell:
