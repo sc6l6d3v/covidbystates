@@ -7,7 +7,7 @@ import org.mongodb.scala.MongoClient
 
 object Mongo {
   def fromUrl(): MongodbConfig = {
-    val host = sys.env.getOrElse("MONGOURL", "localhost")
+    val host = sys.env.getOrElse("MONGOURI", "localhost")
     val isReadOnly = sys.env.getOrElse("MONGORO", "false").toBoolean
     MongodbConfig(host, isReadOnly)
   }

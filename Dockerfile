@@ -17,13 +17,13 @@ ENV APP_VERSION   0.1-SNAPSHOT
 ARG rediskey=key
 ARG redishost=host
 ARG censuskey=key
-ARG mongourl=mongodb://localhost:27017
+ARG mongouri=mongodb://localhost:27017
 ARG mongoro=false
 
 ENV REDISKEY=$rediskey
 ENV REDISHOST=$redishost
 ENV CENSUSKEY=$censuskey
-ARG MONGOURL=$mongourl
+ARG MONGOURI=$mongouri
 ARG MONGORO=$mongoro
 
 
